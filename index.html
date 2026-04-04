@@ -464,7 +464,44 @@ textarea.if{resize:none;height:72px;line-height:1.5;}
 /* ─── DIVIDER ─── */
 .dvdr{height:10px;background:var(--bg);}
 
-/* ─── PRINT / PDF ─── */
+/* ─── MULTI-ROW DIMS ─── */
+.mrow-wrap{display:flex;flex-direction:column;gap:8px;}
+.mrow{
+  background:var(--card2);border:1.5px solid var(--bd);border-radius:var(--r3);
+  padding:10px 12px;position:relative;
+}
+.mrow-num{
+  position:absolute;top:8px;left:10px;
+  width:20px;height:20px;border-radius:6px;
+  background:var(--pr);color:#fff;font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mrow-del{
+  position:absolute;top:8px;right:8px;
+  width:22px;height:22px;border-radius:6px;
+  background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red);
+  font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:.12s;
+}
+.mrow-del:active{background:var(--red);color:#fff;}
+.mrow-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;}
+.mrow-note{margin-top:6px;}
+.mrow-add{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  border:2px dashed var(--pr-bd);border-radius:var(--r3);
+  padding:10px;cursor:pointer;color:var(--pr);
+  font-size:12px;font-weight:800;background:var(--pr-bg);
+  transition:.12s;
+}
+.mrow-add:active{opacity:.7;}
+
+/* PDF multi-row table */
+.pdf-mrows{width:100%;border-collapse:collapse;margin:6px 0;}
+.pdf-mrows th{background:#f0f0f0;font-size:8px;font-weight:800;color:#666;text-transform:uppercase;padding:4px 8px;text-align:left;border:1px solid #e0e0e0;}
+.pdf-mrows td{font-size:11px;font-weight:700;color:#111;padding:5px 8px;border:1px solid #e8e8e8;vertical-align:top;}
+.pdf-mrows tr:nth-child(even) td{background:#fafafa;}
+.pdf-mrows td.num{color:#C0392B;font-weight:900;text-align:center;width:28px;}
+
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   body,html{overflow:visible!important;background:#fff!important;margin:0;padding:0;}
@@ -510,8 +547,10 @@ textarea.if{resize:none;height:72px;line-height:1.5;}
 .pdf-sbody{padding:8px 12px;}
 .pdf-dims{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:5px 0;}
 .pdf-dc{background:#f5f5f5;border-radius:5px;padding:6px 4px;text-align:center;}
+.pdf-dc-note{background:#fffaeb;border:1px solid #fde08d;grid-column:span 1;text-align:left;padding:6px 8px;}
 .pdf-dv{font-size:16px;font-weight:900;color:#C0392B;}
-.pdf-dk{font-size:8px;color:#888;font-weight:700;text-transform:uppercase;}
+.pdf-dv-note{font-size:11px;font-weight:700;color:#855a00;line-height:1.4;word-break:break-word;}
+.pdf-dk{font-size:8px;color:#888;font-weight:700;text-transform:uppercase;margin-top:2px;}
 .pdf-note-box{background:#fffaeb;border:1px solid #fde08d;border-radius:5px;padding:6px 8px;font-size:10px;color:#855a00;margin-top:6px;line-height:1.5;}
 .pdf-montaj{display:inline-block;background:#111;color:#fff;font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;margin:4px 0;}
 .pdf-cam-box{background:#f0f9ff;border:1px solid #b9e6fe;border-radius:5px;padding:6px 8px;font-size:10px;color:#026AA2;font-weight:700;margin-top:5px;}
@@ -605,6 +644,10 @@ textarea.if{resize:none;height:72px;line-height:1.5;}
       <div class="ig">
         <div class="il">Proje / İş Adı</div>
         <input class="if" id="f-project" type="text" placeholder="Örn: Kadıköy AVM Cephe Tabelası">
+      </div>
+      <div class="ig">
+        <div class="il">Ölçümü Alan Kişi</div>
+        <input class="if" id="f-measurer" type="text" placeholder="Adınızı girin...">
       </div>
     </div>
 
@@ -788,13 +831,27 @@ function onScreen(id){
 }
 
 /* ─── GPS ─── */
+let gpsDistrict = '';
 if(navigator.geolocation){
   navigator.geolocation.getCurrentPosition(
     pos=>{
       gpsCoords={lat:pos.coords.latitude.toFixed(5),lng:pos.coords.longitude.toFixed(5)};
       gpsText = gpsCoords.lat+', '+gpsCoords.lng;
       document.getElementById('gps-bar').textContent = '📍 GPS: '+gpsText;
-      document.getElementById('new-gps-bar').textContent = '📍 GPS alındı: '+gpsText;
+      document.getElementById('new-gps-bar').textContent = '📍 Konum alındı: '+gpsText;
+      // Reverse geocode for district
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${gpsCoords.lat}&lon=${gpsCoords.lng}&format=json&accept-language=tr`)
+        .then(r=>r.json())
+        .then(data=>{
+          const a=data.address||{};
+          const district=a.district||a.county||a.town||a.suburb||a.city_district||'';
+          const city=a.province||a.state||a.city||'';
+          gpsDistrict = [district,city].filter(Boolean).join(', ');
+          const locLabel = gpsDistrict ? `📍 ${gpsDistrict} (${gpsText})` : `📍 GPS: ${gpsText}`;
+          document.getElementById('gps-bar').textContent = locLabel;
+          document.getElementById('new-gps-bar').textContent = locLabel;
+        })
+        .catch(()=>{});
     },
     ()=>{
       document.getElementById('gps-bar').textContent = '📍 Konum alınamadı';
@@ -820,7 +877,7 @@ function renderHome(){
     const sc = scls[p.status]||'sb';
     const bc = bcls[p.status]||'bb';
     const camN = (p.signs||[]).filter(s=>s.type==='Cam Folyo').length;
-    const chips = (p.signs||[]).slice(0,3).map(s=>`<div class="chip ${s.type==='Cam Folyo'?'cam-c':''}">${s.label||s.type} <b>${s.w||'?'}×${s.h||'?'}m</b></div>`).join('');
+    const chips = (p.signs||[]).slice(0,3).map(s=>`<div class="chip ${s.type==='Cam Folyo'?'cam-c':''}">${s.label||s.type} <b>${s.w||'?'}×${s.h||'?'}cm</b></div>`).join('');
     const more = (p.signs||[]).length>3?`<div class="chip">+${p.signs.length-3}</div>`:'';
     return `<div class="pcard ${sc}" onclick="openDetail(${i})">
       <div class="pt">
@@ -838,14 +895,14 @@ function renderHome(){
 }
 
 /* ─── SIGN TYPES ─── */
-const SIGN_TYPES=['Kutu Harf','Işıklı Tabela','Totem','LED Ekran','Vinil/Folyo Baskı','Cam Folyo','Yönlendirme','Dijital Baskı','Diğer'];
+const SIGN_TYPES=['Kompozit Tabela','Kutu Harf','Işıklı Tabela','Çatı Tabelası','Totem','Folyo Baskı','Vinil Baskı','Oneway Baskı','Yönlendirme','Dekota Baskı','Diğer'];
 const MONTAJ=['Duvar / Cephe','Cam','Direk / Kolon','Çatı','Zemin','Tavan / Asma'];
 
 /* ─── INIT NEW ─── */
 function initNew(){
-  ['f-client','f-project','f-address','f-note'].forEach(id=>{document.getElementById(id).value='';});
+  ['f-client','f-project','f-address','f-note','f-measurer'].forEach(id=>{document.getElementById(id).value='';});
   document.querySelectorAll('#status-sel .tc').forEach((t,i)=>t.classList.toggle('on',i===0));
-  signCount=0; signPhotos={};
+  signCount=0; signPhotos={}; mrowCounts={};
   document.getElementById('signs-container').innerHTML='';
   document.getElementById('signs-empty').style.display='block';
 }
@@ -877,13 +934,22 @@ function addSign(){
           ${SIGN_TYPES.map(t=>`<option>${t}</option>`).join('')}
         </select>
       </div>
-      <div class="ig">
+
+      <!-- Tek ölçü satırı (varsayılan) -->
+      <div id="${id}-single-dims" class="ig">
         <div class="il">Tabela Ölçüleri</div>
         <div class="drow">
-          <div class="ig"><div class="il">Genişlik (m)</div><input class="if" id="${id}-w" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-          <div class="ig"><div class="il">Yükseklik (m)</div><input class="if" id="${id}-h" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-          <div class="ig"><div class="il">Derinlik (m)</div><input class="if" id="${id}-d" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+          <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-w" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+          <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-h" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+          <div class="ig"><div class="il">Adet</div><input class="if" id="${id}-d" type="number" inputmode="numeric" placeholder="1" step="1"></div>
         </div>
+      </div>
+
+      <!-- Çoklu ölçü satırları (baskı türlerinde) -->
+      <div id="${id}-multi-dims" style="display:none" class="ig">
+        <div class="il" style="margin-bottom:8px;">Ölçü Satırları <span style="color:var(--txt4);font-weight:600;">(her cam/yüzey için ayrı satır)</span></div>
+        <div class="mrow-wrap" id="${id}-mrow-wrap"></div>
+        <div class="mrow-add" onclick="addMRow('${id}')">＋ Ölçü Satırı Ekle</div>
       </div>
 
       <div id="${id}-cam-extra" style="display:none">
@@ -892,8 +958,8 @@ function addSign(){
         <div class="ig">
           <div class="il" style="color:var(--cam)">Cam Yüzey Ölçüsü</div>
           <div class="drow">
-            <div class="ig"><div class="il">Genişlik (m)</div><input class="if" id="${id}-cw" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-            <div class="ig"><div class="il">Yükseklik (m)</div><input class="if" id="${id}-ch" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
+            <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-cw" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+            <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-ch" type="number" inputmode="decimal" placeholder="0" step="1"></div>
           </div>
         </div>
         <div class="ig">
@@ -943,10 +1009,67 @@ function removeSign(id){
   if(!document.getElementById('signs-container').children.length)
     document.getElementById('signs-empty').style.display='block';
 }
+const MULTI_ROW_TYPES=['Folyo Baskı','Vinil Baskı','Oneway Baskı','Dekota Baskı'];
+let mrowCounts={};
+
 function onTypeChange(id){
   const v=document.getElementById(id+'-type').value;
   document.getElementById(id+'-tag').textContent=v||'Tür seçin';
   document.getElementById(id+'-cam-extra').style.display=v==='Cam Folyo'?'':'none';
+  const isMulti=MULTI_ROW_TYPES.includes(v);
+  document.getElementById(id+'-single-dims').style.display=isMulti?'none':'';
+  document.getElementById(id+'-multi-dims').style.display=isMulti?'':'none';
+  if(isMulti && !mrowCounts[id]){
+    mrowCounts[id]=0;
+    addMRow(id); // İlk satırı otomatik ekle
+  }
+}
+
+function addMRow(sid){
+  if(!mrowCounts[sid]) mrowCounts[sid]=0;
+  mrowCounts[sid]++;
+  const ri=mrowCounts[sid];
+  const wrap=document.getElementById(sid+'-mrow-wrap');
+  const row=document.createElement('div');
+  row.className='mrow'; row.id=`${sid}-mrow-${ri}`;
+  row.innerHTML=`
+    <div class="mrow-num">${ri}</div>
+    ${ri>1?`<div class="mrow-del" onclick="removeMRow('${sid}',${ri})">✕</div>`:''}
+    <div class="mrow-fields" style="padding-left:26px;">
+      <div><div class="il">Genişlik (cm)</div><input class="if" id="${sid}-mrow-${ri}-w" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+      <div><div class="il">Yükseklik (cm)</div><input class="if" id="${sid}-mrow-${ri}-h" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+      <div><div class="il">Adet</div><input class="if" id="${sid}-mrow-${ri}-d" type="number" inputmode="numeric" placeholder="1" step="1"></div>
+    </div>
+    <div class="mrow-note">
+      <div class="il">Not / Açıklama</div>
+      <input class="if" id="${sid}-mrow-${ri}-note" type="text" placeholder="Örn: Sol cam, büyük kapı üstü...">
+    </div>
+  `;
+  wrap.appendChild(row);
+  setTimeout(()=>row.scrollIntoView({behavior:'smooth',block:'nearest'}),80);
+}
+
+function removeMRow(sid,ri){
+  const row=document.getElementById(`${sid}-mrow-${ri}`);
+  if(row) row.remove();
+  // Numaraları güncelle
+  document.querySelectorAll(`#${sid}-mrow-wrap .mrow`).forEach((r,i)=>{
+    const numEl=r.querySelector('.mrow-num');
+    if(numEl) numEl.textContent=i+1;
+  });
+}
+
+function getMRows(sid){
+  const rows=[];
+  document.querySelectorAll(`#${sid}-mrow-wrap .mrow`).forEach(row=>{
+    const rid=row.id.split('-').pop();
+    const w=document.getElementById(`${sid}-mrow-${rid}-w`)?.value||'';
+    const h=document.getElementById(`${sid}-mrow-${rid}-h`)?.value||'';
+    const d=document.getElementById(`${sid}-mrow-${rid}-d`)?.value||'';
+    const note=document.getElementById(`${sid}-mrow-${rid}-note`)?.value.trim()||'';
+    if(w||h||d) rows.push({w,h,d,note});
+  });
+  return rows;
 }
 function selOne(el,hidId){
   el.closest('.tcsel').querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
@@ -995,15 +1118,12 @@ function saveProject(){
   const client=document.getElementById('f-client').value.trim();
   const project=document.getElementById('f-project').value.trim();
   if(!client&&!project){toast('Müşteri veya proje adı girin','err');return;}
+  const measurer=document.getElementById('f-measurer').value.trim();
   const signs=[];
   document.querySelectorAll('#signs-container .sign-block').forEach(bl=>{
     const id=bl.id;
     const type=document.getElementById(id+'-type').value;
     const label=document.getElementById(id+'-label').value.trim();
-    const w=document.getElementById(id+'-w').value;
-    const h=document.getElementById(id+'-h').value;
-    const d=document.getElementById(id+'-d').value;
-    const note=document.getElementById(id+'-note').value.trim();
     const montaj=document.getElementById(id+'-montaj').value;
     const photos=(signPhotos[id]||[]).map(p=>({dataUrl:p.dataUrl,note:p.note}));
     const isCam=type==='Cam Folyo';
@@ -1011,12 +1131,22 @@ function saveProject(){
     const ch=isCam?document.getElementById(id+'-ch').value:'';
     const fc=isCam?document.querySelector(`#${id}-fsel .cam-on`):null;
     const folio=fc?fc.textContent:'';
-    signs.push({type,label,w,h,d,note,montaj,photos,cw,ch,folio});
+    const isMulti=MULTI_ROW_TYPES.includes(type);
+    let w='',h='',d='',note='',mrows=[];
+    if(isMulti){
+      mrows=getMRows(id);
+    } else {
+      w=document.getElementById(id+'-w').value;
+      h=document.getElementById(id+'-h').value;
+      d=document.getElementById(id+'-d').value;
+      note=document.getElementById(id+'-note').value.trim();
+    }
+    signs.push({type,label,w,h,d,note,montaj,photos,cw,ch,folio,mrows});
   });
   const status=document.querySelector('#status-sel .on')?.dataset.val||'Ölçüm Alındı';
   const now=new Date();
   const dateStr=now.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  projects.push({client,project,address:document.getElementById('f-address').value.trim(),note:document.getElementById('f-note').value.trim(),status,signs,gps:gpsText,gpsCoords,date:dateStr});
+  projects.push({client,project,measurer,address:document.getElementById('f-address').value.trim(),note:document.getElementById('f-note').value.trim(),status,signs,gps:gpsText,gpsDistrict,gpsCoords,date:dateStr});
   try{localStorage.setItem('tf_projects',JSON.stringify(projects));}catch(e){toast('Depolama hatası','err');}
   toast('Proje kaydedildi ✓');
   setTimeout(()=>{back();renderHome();},350);
@@ -1028,7 +1158,10 @@ function openDetail(idx){
   currentProject=idx;
   const p=projects[idx];
   document.getElementById('det-title').textContent=p.project||'Proje';
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w)||0)*(parseFloat(s.h)||0),0);
+  const totalAdet=(p.signs||[]).reduce((a,s)=>{
+    if(s.mrows&&s.mrows.length) return a+s.mrows.reduce((b,r)=>b+(parseInt(r.d||0)),0);
+    return a+(parseInt(s.d)||0);
+  },0);
   const camN=(p.signs||[]).filter(s=>s.type==='Cam Folyo').length;
   const scroll=document.getElementById('det-scroll');
   scroll.innerHTML=`
@@ -1041,8 +1174,8 @@ function openDetail(idx){
     <div class="fsec">
       <div class="fst">📊 Özet</div>
       <div class="grid2">
-        <div class="mc"><div class="mn">${p.signs?.length||0}</div><div class="ml">Ölçüm Sayısı</div></div>
-        <div class="mc"><div class="mn hl">${totalArea.toFixed(2)}</div><div class="ml">Toplam Alan m²</div></div>
+        <div class="mc"><div class="mn">${p.signs?.length||0}</div><div class="ml">Kalem Sayısı</div></div>
+        <div class="mc"><div class="mn hl">${totalAdet||0}</div><div class="ml">Toplam Adet</div></div>
         ${camN?`<div class="mc"><div class="mn cam">${camN}</div><div class="ml">Cam Folyo</div></div>`:''}
       </div>
     </div>
@@ -1050,7 +1183,6 @@ function openDetail(idx){
     <div class="fsec">
       <div class="fst">🪧 Tabelalar (${p.signs?.length||0})</div>
       ${(p.signs||[]).map((s,i)=>{
-        const area=parseFloat(s.w||0)*parseFloat(s.h||0);
         const photos=(s.photos||[]).length?`<div class="pgrid" style="margin-top:8px">${s.photos.map(ph=>`<div class="pthumb"><img src="${ph.dataUrl}">${ph.note?`<div class="pthumb-note">${ph.note}</div>`:''}</div>`).join('')}</div>`:'';
         return `<div class="sign-det">
           <div class="sd-top">
@@ -1059,11 +1191,16 @@ function openDetail(idx){
             <span class="sd-type">${s.type||''}</span>
           </div>
           <div class="sd-dims">
-            ${s.w?`<div class="chip">G: <b>${s.w}m</b></div>`:''}
-            ${s.h?`<div class="chip">Y: <b>${s.h}m</b></div>`:''}
-            ${s.d?`<div class="chip">D: <b>${s.d}m</b></div>`:''}
-            ${area?`<div class="chip">Alan: <b>${area.toFixed(2)}m²</b></div>`:''}
-            ${s.type==='Cam Folyo'&&s.cw?`<div class="chip cam-c">Cam: <b>${s.cw}×${s.ch}m</b></div>`:''}
+            ${(s.mrows&&s.mrows.length)?
+              s.mrows.map((r,ri)=>`<div class="chip" style="width:100%;margin-bottom:2px;">
+                <b>${ri+1}.</b> ${r.w||'?'}×${r.h||'?'}cm ${r.d?'· <b>'+r.d+' adet</b>':''} ${r.note?'· '+r.note:''}
+              </div>`).join('')
+              :`
+              ${s.w?`<div class="chip">Genişlik: <b>${s.w}cm</b></div>`:''}
+              ${s.h?`<div class="chip">Yükseklik: <b>${s.h}cm</b></div>`:''}
+              ${s.d?`<div class="chip">Adet: <b>${s.d}</b></div>`:''}
+              `}
+            ${s.type==='Cam Folyo'&&s.cw?`<div class="chip cam-c">Cam: <b>${s.cw}×${s.ch}cm</b></div>`:''}
             ${s.folio?`<div class="chip cam-c">${s.folio}</div>`:''}
             ${s.montaj?`<div class="chip" style="color:var(--ylw)">📍 ${s.montaj}</div>`:''}
           </div>
@@ -1075,8 +1212,9 @@ function openDetail(idx){
     <div class="dvdr"></div>
     <div class="fsec">
       <div class="fst">📍 Konum</div>
-      <div class="gps-bar" style="margin:0">${p.address||''} ${p.gps||'Konum bilgisi yok'}</div>
+      <div class="gps-bar" style="margin:0">${[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'Konum bilgisi yok'}</div>
     </div>
+    ${p.measurer?`<div class="dvdr"></div><div class="fsec"><div class="fst">👤 Ölçümü Alan</div><div style="background:var(--pr-bg);border:1px solid var(--pr-bd);border-radius:var(--r3);padding:10px 12px;font-size:14px;color:var(--pr);font-weight:800;">${p.measurer}</div></div>`:''}
     ${p.note?`<div class="dvdr"></div><div class="fsec"><div class="fst">📝 Genel Not</div><div style="background:var(--ylw-bg);border:1px solid var(--ylw-bd);border-radius:var(--r3);padding:10px 12px;font-size:13px;color:var(--ylw);font-weight:600;line-height:1.6">${p.note}</div></div>`:''}
     <div class="dvdr"></div>
     <div style="padding:16px;display:flex;gap:10px;">
@@ -1113,14 +1251,17 @@ function shareThis(idx){
   const p=projects[idx];
   document.getElementById('sp-title').textContent=(p.project||'—').toUpperCase();
   document.getElementById('sp-sub').textContent=`${p.client||'—'} · ${p.date||''}`;
-  document.getElementById('sp-rows').innerHTML=[
+  const locStr=[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'—';
+  const rows=[
     ['Müşteri',p.client||'—'],
     ['Proje',p.project||'—'],
+    ['Ölçümü Alan',p.measurer||'—'],
     ['Tabela Sayısı',(p.signs?.length||0)+' adet'],
-    ['Toplam Alan',((p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0)).toFixed(2)+' m²'],
+    ['Toplam Adet',((p.signs||[]).reduce((a,s)=>a+(parseInt(s.d||0)),0))+' adet'],
     ['Durum',p.status||'—'],
-    ['Konum',p.address||p.gps||'—'],
-  ].map(([k,v])=>`<div class="pr"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('');
+    ['Konum',locStr],
+  ];
+  document.getElementById('sp-rows').innerHTML=rows.map(([k,v])=>`<div class="pr"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('');
 }
 
 function buildText(){
@@ -1128,15 +1269,20 @@ function buildText(){
   if(idx === null || idx === undefined) return 'Proje bulunamadı.';
   const p=projects[idx];
   if(!p) return 'Proje bulunamadı.';
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0);
+  const totalAdet2=(p.signs||[]).reduce((a,s)=>{
+    if(s.mrows&&s.mrows.length) return a+s.mrows.reduce((b,r)=>b+(parseInt(r.d||0)),0);
+    return a+(parseInt(s.d||0));
+  },0);
+  const locStr=[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'—';
   const lines=[
     `🌶️ *PAPRİKA REKLAMCILIK — KEŞİF RAPORU*`,``,
     `📋 *Müşteri:* ${p.client||'—'}`,
     `📌 *Proje:* ${p.project||'—'}`,
+    `👤 *Ölçümü Alan:* ${p.measurer||'—'}`,
     `📅 *Tarih:* ${p.date||'—'}`,
     `🔖 *Durum:* ${p.status||'—'}`,
-    `📍 *Konum:* ${p.address||''} ${p.gps||''}`.trim(),
-    `📐 *Toplam Alan:* ${totalArea.toFixed(2)} m²`,``,
+    `📍 *Konum:* ${locStr}`,
+    `🪧 *Tabela:* ${p.signs?.length||0} kalem — Toplam ${totalAdet2} adet`,``,
     `━━━━━━━━━━━━━━━━━`,
     `🪧 *TABELALAR (${p.signs?.length||0} adet)*`,
     `━━━━━━━━━━━━━━━━━`,
@@ -1145,12 +1291,18 @@ function buildText(){
     lines.push(``);
     lines.push(`*${i+1}. ${s.label||s.type||'Tabela '+(i+1)}*`);
     lines.push(`   Tür: ${s.type||'—'}`);
-    if(s.w||s.h) lines.push(`   Ölçü: ${s.w||'?'} × ${s.h||'?'}${s.d?' × '+s.d:''} m`);
-    if(s.w&&s.h) lines.push(`   Alan: ${(parseFloat(s.w)*parseFloat(s.h)).toFixed(2)} m²`);
-    if(s.type==='Cam Folyo'&&s.cw) lines.push(`   Cam Yüzeyi: ${s.cw} × ${s.ch} m`);
+    if(s.mrows&&s.mrows.length){
+      s.mrows.forEach((r,ri)=>{
+        lines.push(`   ${ri+1}. ${r.w||'?'}×${r.h||'?'} cm — ${r.d||'1'} adet${r.note?' — '+r.note:''}`);
+      });
+    } else {
+      if(s.w||s.h) lines.push(`   Ölçü: ${s.w||'?'} × ${s.h||'?'} cm`);
+      if(s.d) lines.push(`   Adet: ${s.d}`);
+      if(s.note) lines.push(`   Not: ${s.note}`);
+    }
+    if(s.type==='Cam Folyo'&&s.cw) lines.push(`   Cam Yüzeyi: ${s.cw} × ${s.ch} cm`);
     if(s.folio) lines.push(`   Folyo Tipi: ${s.folio}`);
     if(s.montaj) lines.push(`   Montaj: ${s.montaj}`);
-    if(s.note) lines.push(`   Not: ${s.note}`);
     if((s.photos||[]).length) lines.push(`   Fotoğraf: ${s.photos.length} adet (PDF'te görünür)`);
   });
   if(p.note){lines.push(``);lines.push(`📝 *Genel Not:* ${p.note}`);}
@@ -1182,33 +1334,49 @@ function printPDF(){
   const p=projects[idx];
   if(!p){toast('Proje bulunamadı','err');return;}
   const now=new Date().toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0);
+  const totalAdet=(p.signs||[]).reduce((a,s)=>{
+    if(s.mrows&&s.mrows.length) return a+s.mrows.reduce((b,r)=>b+(parseInt(r.d||0)),0);
+    return a+(parseInt(s.d||0));
+  },0);
   const signsHtml=(p.signs||[]).map((s,i)=>{
     const isCam=s.type==='Cam Folyo';
-    const area=parseFloat(s.w||0)*parseFloat(s.h||0);
     const photos=(s.photos||[]).length?
       `<div class="pdf-photos-label">FOTOĞRAFLAR (${s.photos.length} adet)</div>
        <div class="pdf-photos">${s.photos.map(ph=>`<div class="pdf-photo"><img src="${ph.dataUrl}">${ph.note?`<div class="pdf-photo-note">${ph.note}</div>`:''}</div>`).join('')}</div>`:'';
+
+    const dimsHtml=(s.mrows&&s.mrows.length)?`
+      <table class="pdf-mrows">
+        <tr><th>#</th><th>Genişlik (cm)</th><th>Yükseklik (cm)</th><th>Adet</th><th>Not / Açıklama</th></tr>
+        ${s.mrows.map((r,ri)=>`<tr>
+          <td class="num">${ri+1}</td>
+          <td>${r.w||'—'}</td>
+          <td>${r.h||'—'}</td>
+          <td>${r.d||'—'}</td>
+          <td>${r.note||'—'}</td>
+        </tr>`).join('')}
+      </table>`
+    :`<div class="pdf-dims">
+        <div class="pdf-dc"><div class="pdf-dv">${s.w||'—'}</div><div class="pdf-dk">Genişlik (cm)</div></div>
+        <div class="pdf-dc"><div class="pdf-dv">${s.h||'—'}</div><div class="pdf-dk">Yükseklik (cm)</div></div>
+        <div class="pdf-dc"><div class="pdf-dv">${s.d||'—'}</div><div class="pdf-dk">Adet</div></div>
+        <div class="pdf-dc pdf-dc-note"><div class="pdf-dv-note">${s.note||'—'}</div><div class="pdf-dk">Detay Notu</div></div>
+      </div>`;
+
     return `<div class="pdf-sign ${isCam?'pdf-cam-sign':''}">
       <div class="pdf-stop">
         <div class="pdf-stop-t">${i+1}. ${s.label||s.type||'Tabela '+(i+1)}</div>
-        <div class="pdf-stop-s">${s.type||''}</div>
+        <div class="pdf-stop-s">${s.type||''}${(s.mrows&&s.mrows.length)?' · '+s.mrows.length+' satır':''}</div>
       </div>
       <div class="pdf-sbody">
-        <div class="pdf-dims">
-          <div class="pdf-dc"><div class="pdf-dv">${s.w||'—'}</div><div class="pdf-dk">Gen. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv">${s.h||'—'}</div><div class="pdf-dk">Yük. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv">${s.d||'—'}</div><div class="pdf-dk">Der. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv" style="color:#C0392B">${area?area.toFixed(2):'—'}</div><div class="pdf-dk">Alan m²</div></div>
-        </div>
-        ${isCam&&s.cw?`<div class="pdf-cam-box">🪟 Cam Yüzeyi: ${s.cw} × ${s.ch} m &nbsp;|&nbsp; Folyo: ${s.folio||'—'}</div>`:''}
+        ${dimsHtml}
+        ${isCam&&s.cw?`<div class="pdf-cam-box">🪟 Cam Yüzeyi: ${s.cw} × ${s.ch} cm &nbsp;|&nbsp; Folyo: ${s.folio||'—'}</div>`:''}
         ${s.montaj?`<span class="pdf-montaj">📍 ${s.montaj}</span>`:''}
-        ${s.note?`<div class="pdf-note-box">📝 ${s.note}</div>`:''}
         ${photos}
       </div>
     </div>`;
   }).join('');
 
+  const locStr=[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'—';
   document.getElementById('pdf-content').innerHTML=`
     <div class="pdf-brand">
       <div>
@@ -1221,12 +1389,13 @@ function printPDF(){
     <div class="pdf-info-grid">
       <div class="pdf-ic"><div class="pdf-ik">Müşteri / Firma</div><div class="pdf-iv">${p.client||'—'}</div></div>
       <div class="pdf-ic"><div class="pdf-ik">Proje Adı</div><div class="pdf-iv">${p.project||'—'}</div></div>
+      <div class="pdf-ic"><div class="pdf-ik">Ölçümü Alan</div><div class="pdf-iv">${p.measurer||'—'}</div></div>
       <div class="pdf-ic"><div class="pdf-ik">Durum</div><div class="pdf-iv">${p.status||'—'}</div></div>
       <div class="pdf-ic"><div class="pdf-ik">Tarih</div><div class="pdf-iv">${p.date||now}</div></div>
       <div class="pdf-ic"><div class="pdf-ik">Tabela Sayısı</div><div class="pdf-iv">${p.signs?.length||0} adet</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Toplam Alan</div><div class="pdf-iv">${totalArea.toFixed(2)} m²</div></div>
+      <div class="pdf-ic"><div class="pdf-ik">Toplam Adet</div><div class="pdf-iv">${totalAdet} adet</div></div>
     </div>
-    ${p.gps||p.address?`<div class="pdf-gps">📍 Konum: ${p.address||''} ${p.gps||''}</div>`:''}
+    ${p.gps||p.address||p.gpsDistrict?`<div class="pdf-gps">📍 Konum: ${locStr}</div>`:''}
     <div class="pdf-sec-title">Tabela Ölçümleri (${p.signs?.length||0} Adet)</div>
     ${signsHtml}
     ${p.note?`<div class="pdf-sec-title">Genel Saha Notu</div><div class="pdf-note-box" style="font-size:11px">${p.note}</div>`:''}
