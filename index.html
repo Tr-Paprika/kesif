@@ -1,1220 +1,364 @@
-<!DOCTYPE html>
-<html lang="tr">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="TaberaField">
-<title>TaberaField</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
-<style>
-/* ─── TOKENS ─── */
-:root{
-  --pr:    #E8500A;   /* turuncu ana */
-  --pr2:   #FF7235;   /* turuncu açık */
-  --pr-bg: #FFF3EE;   /* turuncu zemin */
-  --pr-bd: #FFD4BC;   /* turuncu kenarlık */
-  --bg:    #F4F5F7;   /* sayfa zemin */
-  --card:  #FFFFFF;   /* kart */
-  --card2: #F9FAFB;   /* ikincil kart */
-  --bd:    #E4E7EC;   /* kenarlık */
-  --bd2:   #D0D5DD;   /* koyu kenarlık */
-  --txt:   #101828;   /* ana metin */
-  --txt2:  #344054;   /* ikincil metin */
-  --txt3:  #667085;   /* üçüncül metin */
-  --txt4:  #98A2B3;   /* placeholder */
-  --grn:   #12B76A;
-  --grn-bg:#ECFDF3;
-  --grn-bd:#A6F4C5;
-  --ylw:   #DC6803;
-  --ylw-bg:#FFFAEB;
-  --ylw-bd:#FDE08D;
-  --blu:   #1570EF;
-  --blu-bg:#EFF8FF;
-  --blu-bd:#B2DDFF;
-  --red:   #D92D20;
-  --red-bg:#FEF3F2;
-  --red-bd:#FECDCA;
-  --cam:   #026AA2;
-  --cam-bg:#F0F9FF;
-  --cam-bd:#B9E6FE;
-  --sh:    0 1px 3px rgba(16,24,40,.1), 0 1px 2px rgba(16,24,40,.06);
-  --sh2:   0 4px 8px -2px rgba(16,24,40,.1), 0 2px 4px -2px rgba(16,24,40,.06);
-  --r:     14px;
-  --r2:    10px;
-  --r3:    8px;
-}
-
-/* ─── RESET ─── */
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html{height:100%;-webkit-text-size-adjust:100%;}
-body{
-  background:var(--bg);
-  font-family:'Nunito',sans-serif;
-  color:var(--txt);
-  height:100%;
-  overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ─── APP WRAPPER ─── */
-/* On real phones this fills 100vh; on desktop we show a phone frame */
-.app{
-  width:100%;max-width:430px;
-  height:100%;
-  margin:0 auto;
-  position:relative;
-  overflow:hidden;
-  background:var(--bg);
-  display:flex;flex-direction:column;
-}
-@media(min-height:700px) and (min-width:500px){
-  body{display:flex;align-items:center;justify-content:center;background:#CBD5E1;}
-  .app{
-    height:812px;border-radius:44px;
-    box-shadow:0 0 0 10px #1E293B, 0 40px 80px rgba(0,0,0,.45);
-    overflow:hidden;
-  }
-}
-
-/* ─── SCREEN SYSTEM ─── */
-.scr{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;
-  background:var(--bg);
-  transform:translateX(105%);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  z-index:1;
-  will-change:transform;
-}
-.scr.active{transform:translateX(0);z-index:2;}
-.scr.behind{transform:translateX(-8%);z-index:0;}
-
-/* ─── SCROLL AREA ─── */
-.scroll{
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  padding-bottom:86px;
-}
-.scroll::-webkit-scrollbar{display:none;}
-
-/* ─── STATUS BAR (fake, hides behind native on mobile) ─── */
-.sbar{
-  height:env(safe-area-inset-top, 44px);
-  min-height:44px;
-  background:var(--card);
-  display:flex;align-items:flex-end;justify-content:space-between;
-  padding:0 20px 8px;
-  font-size:12px;font-weight:800;color:var(--txt2);
-  flex-shrink:0;
-  border-bottom:1px solid var(--bd);
-}
-
-/* ─── TOP BAR ─── */
-.topbar{
-  background:var(--card);
-  border-bottom:1px solid var(--bd);
-  flex-shrink:0;
-  display:flex;align-items:center;
-  gap:10px;
-  padding:0 16px;
-  height:56px;
-}
-.topbar-logo{
-  font-size:20px;font-weight:900;color:var(--txt);
-  letter-spacing:-.3px;
-}
-.topbar-logo em{color:var(--pr);font-style:normal;}
-.topbar-sub{font-size:11px;color:var(--txt3);font-weight:600;margin-top:-2px;}
-.topbar-flex{flex:1;}
-.topbar-title{font-size:16px;font-weight:800;color:var(--txt);}
-.topbar-back{
-  width:36px;height:36px;border-radius:10px;
-  background:var(--bg);border:1px solid var(--bd);
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:18px;color:var(--txt2);flex-shrink:0;
-  transition:.12s;
-}
-.topbar-back:active{background:var(--bd);}
-.topbar-action{
-  font-size:12px;font-weight:800;color:var(--pr);cursor:pointer;
-  padding:6px 12px;border-radius:8px;background:var(--pr-bg);
-  border:1px solid var(--pr-bd);
-  transition:.12s;white-space:nowrap;
-}
-.topbar-action:active{opacity:.7;}
-
-/* ─── BOTTOM NAV ─── */
-.bnav{
-  position:absolute;bottom:0;left:0;right:0;
-  height:calc(64px + env(safe-area-inset-bottom, 0px));
-  background:var(--card);
-  border-top:1px solid var(--bd);
-  display:flex;align-items:center;justify-content:space-around;
-  padding:0 8px;
-  padding-bottom:env(safe-area-inset-bottom,0px);
-  box-shadow:0 -4px 16px rgba(16,24,40,.06);
-  z-index:10;
-}
-.ni{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  cursor:pointer;padding:8px 16px;border-radius:12px;transition:.12s;
-  flex:1;
-}
-.ni .ico{font-size:22px;transition:.12s;opacity:.45;}
-.ni .lbl{font-size:10px;font-weight:700;color:var(--txt4);letter-spacing:.2px;}
-.ni.on .ico{opacity:1;}
-.ni.on .lbl{color:var(--pr);}
-
-/* FAB */
-.fab-wrap{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  cursor:pointer;flex:1;
-}
-.fab{
-  width:52px;height:52px;
-  background:linear-gradient(145deg,var(--pr),var(--pr2));
-  border-radius:16px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;
-  box-shadow:0 4px 14px rgba(232,80,10,.45);
-  transition:.15s;margin-top:-14px;
-}
-.fab:active{transform:scale(.92);box-shadow:0 2px 6px rgba(232,80,10,.3);}
-.fab-lbl{font-size:10px;font-weight:700;color:var(--pr);}
-
-/* ─── STATS STRIP ─── */
-.stats{
-  display:flex;gap:10px;
-  padding:14px 16px 10px;
-}
-.sc{
-  flex:1;background:var(--card);border-radius:var(--r);
-  padding:12px 14px;border:1px solid var(--bd);
-  box-shadow:var(--sh);
-}
-.sn{font-size:26px;font-weight:900;color:var(--txt);line-height:1;}
-.sl{font-size:10px;color:var(--txt3);margin-top:3px;font-weight:700;display:flex;align-items:center;gap:4px;}
-.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-
-/* ─── SECTION LABEL ─── */
-.sec-lbl{
-  font-size:11px;font-weight:800;color:var(--txt3);
-  letter-spacing:.8px;text-transform:uppercase;
-  padding:6px 16px 6px;
-}
-
-/* ─── GPS BAR ─── */
-.gps-bar{
-  margin:4px 16px 8px;
-  background:var(--blu-bg);border:1px solid var(--blu-bd);
-  border-radius:var(--r2);padding:9px 12px;
-  display:flex;align-items:center;gap:8px;
-  font-size:11px;color:var(--blu);font-weight:700;
-}
-
-/* ─── PROJECT CARD ─── */
-.pcard{
-  margin:0 14px 10px;
-  background:var(--card);border-radius:var(--r);
-  padding:14px;border:1px solid var(--bd);
-  box-shadow:var(--sh);cursor:pointer;transition:.15s;
-  position:relative;overflow:hidden;
-}
-.pcard::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;
-  width:4px;border-radius:4px 0 0 4px;
-}
-.pcard.sy::before{background:var(--ylw);}
-.pcard.sg::before{background:var(--grn);}
-.pcard.sb::before{background:var(--blu);}
-.pcard.sr::before{background:var(--red);}
-.pcard:active{transform:scale(.985);box-shadow:none;}
-
-.pt{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;}
-.pn{font-size:14px;font-weight:800;color:var(--txt);line-height:1.3;}
-.pc{font-size:11px;color:var(--txt3);margin-top:2px;font-weight:600;}
-
-/* BADGES */
-.badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;border:1px solid;}
-.by{background:var(--ylw-bg);color:var(--ylw);border-color:var(--ylw-bd);}
-.bg{background:var(--grn-bg);color:var(--grn);border-color:var(--grn-bd);}
-.bb{background:var(--blu-bg);color:var(--blu);border-color:var(--blu-bd);}
-.br{background:var(--red-bg);color:var(--red);border-color:var(--red-bd);}
-
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-.chip{
-  background:var(--bg);border:1px solid var(--bd);
-  border-radius:6px;padding:3px 9px;
-  font-size:11px;color:var(--txt2);font-weight:700;
-}
-.chip b{color:var(--pr);}
-.chip.cam-c{background:var(--cam-bg);border-color:var(--cam-bd);color:var(--cam);}
-
-.pf{display:flex;justify-content:space-between;align-items:center;gap:6px;}
-.ploc{font-size:10px;color:var(--txt3);font-weight:600;display:flex;align-items:center;gap:3px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pph{font-size:10px;color:var(--pr);font-weight:800;white-space:nowrap;}
-.pdt{font-size:10px;color:var(--txt4);white-space:nowrap;}
-
-/* ─── FORM ─── */
-.fsec{background:var(--card);margin:0 0 10px;padding:16px;}
-.fsec:first-child{border-top:1px solid var(--bd);}
-.fst{
-  font-size:12px;font-weight:800;color:var(--pr);
-  letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;
-  display:flex;align-items:center;gap:8px;
-}
-.ig{margin-bottom:12px;}
-.ig:last-child{margin-bottom:0;}
-.il{
-  font-size:11px;color:var(--txt3);margin-bottom:5px;
-  font-weight:800;letter-spacing:.3px;text-transform:uppercase;
-}
-.if{
-  width:100%;background:var(--card2);border:1.5px solid var(--bd2);
-  border-radius:var(--r3);padding:11px 13px;
-  color:var(--txt);font-size:14px;
-  font-family:'Nunito',sans-serif;outline:none;transition:.15s;
-  -webkit-appearance:none;
-}
-.if:focus{border-color:var(--pr);background:#fff;box-shadow:0 0 0 3px var(--pr-bg);}
-.if::placeholder{color:var(--txt4);}
-select.if{cursor:pointer;}
-textarea.if{resize:none;height:72px;line-height:1.5;}
-.drow{display:flex;gap:8px;}
-.drow .ig{flex:1;margin-bottom:0;}
-
-/* ─── CHIP SELECTOR ─── */
-.tcsel{display:flex;flex-wrap:wrap;gap:7px;}
-.tc{
-  padding:7px 13px;
-  background:var(--bg);border:1.5px solid var(--bd2);
-  border-radius:var(--r3);font-size:12px;font-weight:700;
-  color:var(--txt3);cursor:pointer;transition:.12s;
-  user-select:none;-webkit-user-select:none;
-}
-.tc.on{background:var(--pr-bg);border-color:var(--pr);color:var(--pr);}
-.tc.cam-on{background:var(--cam-bg);border-color:var(--cam-bd);color:var(--cam);}
-
-/* ─── SIGN BLOCK ─── */
-.sign-block{
-  background:var(--card);border-radius:var(--r);
-  border:1.5px solid var(--bd);margin-bottom:10px;
-  overflow:hidden;box-shadow:var(--sh);
-}
-.sign-hdr{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 14px;background:var(--card2);
-  border-bottom:1px solid var(--bd);cursor:pointer;
-}
-.sign-num{
-  width:26px;height:26px;border-radius:8px;
-  background:var(--pr);color:#fff;
-  font-size:13px;font-weight:900;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.sign-lbl{font-size:13px;font-weight:800;color:var(--txt);flex:1;}
-.sign-type-tag{font-size:10px;font-weight:700;color:var(--txt3);}
-.sign-del{
-  font-size:18px;cursor:pointer;padding:2px 4px;
-  color:var(--txt4);transition:.12s;
-}
-.sign-del:active{color:var(--red);}
-.sign-body{padding:14px;}
-
-/* ─── PHOTO ZONE ─── */
-.pzone{
-  border:2px dashed var(--bd2);border-radius:var(--r2);
-  padding:18px 14px;text-align:center;
-  background:var(--card2);transition:.15s;
-  position:relative;overflow:hidden;cursor:pointer;
-}
-.pzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.pzone:active,.pzone:hover{border-color:var(--pr);background:var(--pr-bg);}
-.pz-ico{font-size:28px;margin-bottom:4px;}
-.pz-txt{font-size:13px;color:var(--txt2);font-weight:700;}
-.pz-sub{font-size:11px;color:var(--txt4);margin-top:2px;}
-
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px;}
-.pthumb{
-  aspect-ratio:1;border-radius:var(--r3);background:var(--bd);
-  overflow:hidden;position:relative;
-  display:flex;align-items:center;justify-content:center;
-}
-.pthumb img{width:100%;height:100%;object-fit:cover;}
-.pthumb-del{
-  position:absolute;top:4px;right:4px;
-  background:rgba(217,45,32,.9);border-radius:5px;
-  width:20px;height:20px;display:flex;align-items:center;
-  justify-content:center;font-size:11px;color:#fff;cursor:pointer;
-  font-weight:800;
-}
-.pthumb-note{
-  position:absolute;bottom:0;left:0;right:0;
-  background:rgba(0,0,0,.55);
-  padding:3px 5px;font-size:9px;color:#fff;font-weight:700;
-  text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-
-/* ─── BUTTONS ─── */
-.abtn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(145deg,var(--pr),var(--pr2));
-  border:none;border-radius:var(--r2);padding:14px 18px;
-  font-size:14px;font-weight:800;color:#fff;
-  cursor:pointer;font-family:'Nunito',sans-serif;
-  width:100%;box-shadow:0 4px 12px rgba(232,80,10,.35);
-  transition:.14s;
-}
-.abtn:active{transform:scale(.97);box-shadow:none;}
-.abtn.ghost{
-  background:var(--bg);color:var(--txt2);
-  border:1.5px solid var(--bd2);box-shadow:var(--sh);
-}
-.abtn.grn{background:linear-gradient(145deg,var(--grn),#34d399);box-shadow:0 4px 12px rgba(18,183,106,.3);}
-
-/* ─── SHARE CARDS ─── */
-.scard{
-  margin:0 14px 10px;background:var(--card);
-  border-radius:var(--r);padding:14px;
-  border:1.5px solid var(--bd);box-shadow:var(--sh);
-  cursor:pointer;display:flex;align-items:center;gap:12px;
-  transition:.14s;
-}
-.scard:active{transform:scale(.97);box-shadow:none;}
-.sico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.sinfo{flex:1;}
-.sname{font-weight:800;font-size:14px;color:var(--txt);}
-.sdesc{font-size:11px;color:var(--txt3);margin-top:2px;font-weight:600;}
-.sarr{color:var(--txt4);font-size:18px;font-weight:700;}
-
-/* ─── PDF PREVIEW BOX ─── */
-.pdf-prev-box{
-  margin:12px 14px;background:var(--card);
-  border-radius:var(--r);border:1.5px solid var(--bd);
-  box-shadow:var(--sh);overflow:hidden;
-}
-.pdf-prev-top{
-  background:linear-gradient(135deg,var(--pr),var(--pr2));
-  padding:12px 14px;
-}
-.pdf-prev-title{font-size:14px;font-weight:900;color:#fff;letter-spacing:.2px;}
-.pdf-prev-sub{font-size:11px;color:rgba(255,255,255,.75);margin-top:2px;font-weight:600;}
-.pdf-rows{padding:10px 14px;}
-.pr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;}
-.pr:last-child{border:none;}
-.pk{color:var(--txt3);font-weight:700;}
-.pv{color:var(--txt);font-weight:800;}
-
-/* ─── DETAIL ─── */
-.det-hero{
-  background:linear-gradient(135deg,#FFF7F5,var(--pr-bg));
-  border-bottom:1px solid var(--pr-bd);
-  padding:16px;
-}
-.det-name{font-size:18px;font-weight:900;color:var(--txt);line-height:1.3;}
-.det-client{font-size:12px;color:var(--txt3);margin-top:3px;font-weight:700;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.mc{background:var(--card);border-radius:var(--r2);padding:12px;border:1px solid var(--bd);box-shadow:var(--sh);}
-.mn{font-size:22px;font-weight:900;color:var(--txt);line-height:1;}
-.mn.hl{color:var(--pr);}
-.mn.cam{color:var(--cam);}
-.ml{font-size:10px;color:var(--txt3);margin-top:4px;font-weight:700;text-transform:uppercase;}
-
-.sign-det{
-  background:var(--card);border-radius:var(--r2);
-  padding:12px 14px;border:1.5px solid var(--bd);
-  margin-bottom:8px;box-shadow:var(--sh);
-}
-.sd-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.sd-num{
-  background:var(--pr);color:#fff;font-size:12px;font-weight:900;
-  padding:2px 9px;border-radius:6px;
-}
-.sd-name{font-size:13px;font-weight:800;color:var(--txt);flex:1;}
-.sd-type{font-size:10px;color:var(--txt3);font-weight:700;}
-.sd-dims{display:flex;gap:6px;flex-wrap:wrap;}
-.note-box{
-  margin-top:8px;background:var(--ylw-bg);border:1px solid var(--ylw-bd);
-  border-radius:8px;padding:8px 10px;font-size:11px;color:var(--ylw);font-weight:700;
-  line-height:1.5;
-}
-
-/* ─── TOAST ─── */
-.toast{
-  position:absolute;top:60px;left:14px;right:14px;
-  background:var(--grn);border-radius:var(--r2);padding:11px 14px;
-  font-size:13px;font-weight:800;color:#fff;
-  display:flex;align-items:center;gap:8px;z-index:999;
-  transform:translateY(-100px);opacity:0;transition:.3s;
-  pointer-events:none;box-shadow:0 6px 16px rgba(18,183,106,.4);
-}
-.toast.show{transform:translateY(0);opacity:1;}
-.toast.err{background:var(--red);box-shadow:0 6px 16px rgba(217,45,32,.4);}
-
-/* ─── EMPTY STATE ─── */
-.empty{text-align:center;padding:48px 20px;}
-.empty-ico{font-size:48px;margin-bottom:12px;}
-.empty-txt{font-size:14px;font-weight:800;color:var(--txt2);}
-.empty-sub{font-size:12px;color:var(--txt4);margin-top:5px;font-weight:600;}
-
-/* ─── DIVIDER ─── */
-.dvdr{height:10px;background:var(--bg);}
-
-/* ─── PRINT / PDF ─── */
-@media print{
-  body,html{overflow:visible!important;background:#fff;}
-  .app,.scr{all:unset;display:block;width:100%;height:auto;}
-  .scr{display:none!important;}
-  #pdf-doc{display:block!important;}
-  .bnav,.sbar,.topbar,.toast{display:none!important;}
-  .scroll{overflow:visible!important;padding:0!important;}
-}
-#pdf-doc{display:none;position:fixed;inset:0;z-index:9999;background:#fff;overflow:auto;}
-.pdf-page{width:210mm;min-height:297mm;margin:0 auto;padding:14mm 16mm;background:#fff;font-family:'Nunito',sans-serif;color:#111;}
-.pdf-brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:3px solid var(--pr);}
-.pdf-brand-logo{font-size:26px;font-weight:900;color:var(--pr);}
-.pdf-brand-logo span{color:#111;}
-.pdf-brand-right{text-align:right;font-size:10px;color:#888;}
-.pdf-sec-title{font-size:14px;font-weight:900;color:var(--pr);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;border-left:3px solid var(--pr);padding-left:8px;}
-.pdf-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.pdf-ic{background:#f8f8f8;border-radius:8px;padding:10px 12px;}
-.pdf-ik{font-size:9px;font-weight:800;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.pdf-iv{font-size:13px;font-weight:800;color:#111;}
-.pdf-sign{background:#fff;border:2px solid #eee;border-radius:10px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid;}
-.pdf-stop{background:var(--pr);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;}
-.pdf-stop-t{font-size:14px;font-weight:900;color:#fff;}
-.pdf-stop-s{font-size:10px;color:rgba(255,255,255,.8);font-weight:700;}
-.pdf-sbody{padding:12px 14px;}
-.pdf-dims{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0;}
-.pdf-dc{background:#f5f5f5;border-radius:6px;padding:8px;text-align:center;}
-.pdf-dv{font-size:20px;font-weight:900;color:var(--pr);}
-.pdf-dk{font-size:9px;color:#888;font-weight:700;text-transform:uppercase;}
-.pdf-note-box{background:#fffaeb;border:1px solid #fde08d;border-radius:6px;padding:8px 10px;font-size:11px;color:#855a00;margin-top:8px;}
-.pdf-montaj{display:inline-block;background:#111;color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin:6px 0;}
-.pdf-cam-box{background:#f0f9ff;border:1px solid #b9e6fe;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--cam);font-weight:700;margin-top:6px;}
-.pdf-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
-.pdf-photo{border-radius:6px;overflow:hidden;border:1px solid #eee;}
-.pdf-photo img{width:100%;height:80px;object-fit:cover;display:block;}
-.pdf-photo-note{font-size:9px;padding:3px 5px;background:#f8f8f8;color:#666;text-align:center;}
-.pdf-footer{margin-top:20px;padding-top:10px;border-top:2px solid #eee;display:flex;justify-content:space-between;font-size:10px;color:#aaa;}
-.pdf-gps{background:#eff8ff;border:1px solid #b2ddff;border-radius:6px;padding:8px 12px;font-size:11px;color:var(--blu);font-weight:700;margin-bottom:12px;}
-.pdf-cam-sign .pdf-stop{background:var(--cam);}
-.pdf-cam-sign{border-color:#b9e6fe;}
-</style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    body {background-color: #edeff2}
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Times; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #1fa045}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Times; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #1fa045; min-height: 16.0px}
+    span.s1 {font-kerning: none}
+  </style>
 </head>
 <body>
-
-<!-- PDF PRINT LAYER -->
-<div id="pdf-doc"><div class="pdf-page" id="pdf-content"></div></div>
-
-<!-- APP -->
-<div class="app">
-<div class="toast" id="toast">✅ <span id="tmsg">Tamam</span></div>
-
-<!-- ══════════════════════════════
-     ANA SAYFA
-══════════════════════════════ -->
-<div class="scr active" id="s-home">
-  <div class="topbar">
-    <div>
-      <div class="topbar-logo">TABERA<em>FIELD</em></div>
-      <div style="font-size:10px;color:var(--txt3);font-weight:600;">Saha Ölçüm & Yönetim</div>
-    </div>
-    <div class="topbar-flex"></div>
-    <div class="topbar-action" onclick="go('s-new')">+ Yeni Proje</div>
-  </div>
-
-  <div class="scroll">
-    <!-- Stats -->
-    <div class="stats">
-      <div class="sc">
-        <div class="sn" id="stat-total">0</div>
-        <div class="sl"><span class="sdot" style="background:var(--blu)"></span>Toplam</div>
-      </div>
-      <div class="sc">
-        <div class="sn" id="stat-wait">0</div>
-        <div class="sl"><span class="sdot" style="background:var(--ylw)"></span>Devam</div>
-      </div>
-      <div class="sc">
-        <div class="sn" id="stat-done">0</div>
-        <div class="sl"><span class="sdot" style="background:var(--grn)"></span>Bitti</div>
-      </div>
-    </div>
-
-    <div class="gps-bar" id="gps-bar">📍 Konum alınıyor...</div>
-    <div class="sec-lbl">PROJELERİM</div>
-    <div id="proj-list"></div>
-    <div style="height:4px;"></div>
-  </div>
-
-  <div class="bnav">
-    <div class="ni on"><div class="ico">🏠</div><div class="lbl">Ana Sayfa</div></div>
-    <div class="fab-wrap" onclick="go('s-new')">
-      <div class="fab">➕</div>
-      <div class="fab-lbl">YENİ</div>
-    </div>
-    <div class="ni" onclick="go('s-share-list')"><div class="ico">📤</div><div class="lbl">Paylaş</div></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     YENİ PROJE
-══════════════════════════════ -->
-<div class="scr" id="s-new">
-  <div class="topbar">
-    <div class="topbar-back" onclick="back()">←</div>
-    <div class="topbar-flex" style="padding-left:10px">
-      <div class="topbar-title">Yeni Proje</div>
-    </div>
-  </div>
-
-  <div class="scroll" id="new-scroll">
-    <div class="dvdr"></div>
-
-    <!-- Müşteri -->
-    <div class="fsec">
-      <div class="fst">👤 Müşteri Bilgileri</div>
-      <div class="ig">
-        <div class="il">Müşteri / Firma Adı</div>
-        <input class="if" id="f-client" type="text" placeholder="Örn: Mavi Reklam A.Ş.">
-      </div>
-      <div class="ig">
-        <div class="il">Proje / İş Adı</div>
-        <input class="if" id="f-project" type="text" placeholder="Örn: Kadıköy AVM Cephe Tabelası">
-      </div>
-    </div>
-
-    <div class="dvdr"></div>
-
-    <!-- Konum -->
-    <div class="fsec">
-      <div class="fst">📍 Konum</div>
-      <div class="gps-bar" id="new-gps-bar" style="margin:0 0 12px">📍 Alınıyor...</div>
-      <div class="ig">
-        <div class="il">Adres (İsteğe Bağlı)</div>
-        <input class="if" id="f-address" type="text" placeholder="İlçe, cadde, bina no...">
-      </div>
-    </div>
-
-    <div class="dvdr"></div>
-
-    <!-- Tabelalar -->
-    <div class="fsec">
-      <div class="fst">
-        🪧 Tabela Ölçümleri
-        <div style="flex:1"></div>
-        <div class="topbar-action" onclick="addSign()">+ Ekle</div>
-      </div>
-      <div id="signs-container"></div>
-      <div id="signs-empty" style="text-align:center;padding:20px 10px;">
-        <div style="font-size:32px;margin-bottom:6px">📐</div>
-        <div style="font-size:13px;font-weight:700;color:var(--txt3)">Tabela eklenmedi</div>
-        <div style="font-size:11px;color:var(--txt4);margin-top:3px">"Ekle" butonuna basarak başlayın</div>
-      </div>
-    </div>
-
-    <div class="dvdr"></div>
-
-    <!-- Genel Not -->
-    <div class="fsec">
-      <div class="fst">📝 Genel Saha Notu</div>
-      <textarea class="if" id="f-note" placeholder="Elektrik bağlantısı, zemin durumu, özel talepler..."></textarea>
-    </div>
-
-    <div class="dvdr"></div>
-
-    <!-- Durum -->
-    <div class="fsec">
-      <div class="fst">🔖 Proje Durumu</div>
-      <div class="tcsel" id="status-sel">
-        <div class="tc on" data-val="Ölçüm Alındı" onclick="selStatus(this)">📏 Ölçüm Alındı</div>
-        <div class="tc" data-val="Üretimde" onclick="selStatus(this)">🏭 Üretimde</div>
-        <div class="tc" data-val="Montaj Bekliyor" onclick="selStatus(this)">⏳ Montaj Bekliyor</div>
-        <div class="tc" data-val="Tamamlandı" onclick="selStatus(this)">✅ Tamamlandı</div>
-        <div class="tc" data-val="Acil" onclick="selStatus(this)">🔴 Acil</div>
-      </div>
-    </div>
-
-    <div style="padding:16px;">
-      <button class="abtn" onclick="saveProject()">💾 Projeyi Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     PROJE DETAY
-══════════════════════════════ -->
-<div class="scr" id="s-detail">
-  <div class="topbar">
-    <div class="topbar-back" onclick="back()">←</div>
-    <div class="topbar-flex" style="padding-left:10px">
-      <div class="topbar-title" id="det-title">Proje</div>
-    </div>
-    <div style="font-size:20px;cursor:pointer;padding:4px;" onclick="deleteProject()">🗑️</div>
-  </div>
-  <div class="scroll" id="det-scroll"></div>
-</div>
-
-<!-- ══════════════════════════════
-     PAYLAŞIM LİSTESİ
-══════════════════════════════ -->
-<div class="scr" id="s-share-list">
-  <div class="topbar">
-    <div class="topbar-back" onclick="back()">←</div>
-    <div class="topbar-flex" style="padding-left:10px">
-      <div class="topbar-title">Paylaş</div>
-    </div>
-  </div>
-  <div class="scroll">
-    <div class="dvdr"></div>
-    <div class="sec-lbl">Paylaşmak istediğin projeyi seç</div>
-    <div id="share-proj-list"></div>
-  </div>
-  <div class="bnav">
-    <div class="ni" onclick="go('s-home')"><div class="ico">🏠</div><div class="lbl">Ana Sayfa</div></div>
-    <div class="fab-wrap" onclick="go('s-new')"><div class="fab">➕</div><div class="fab-lbl">YENİ</div></div>
-    <div class="ni on"><div class="ico">📤</div><div class="lbl">Paylaş</div></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════
-     PAYLAŞIM EKRANI
-══════════════════════════════ -->
-<div class="scr" id="s-share">
-  <div class="topbar">
-    <div class="topbar-back" onclick="back()">←</div>
-    <div class="topbar-flex" style="padding-left:10px">
-      <div class="topbar-title">Paylaşım</div>
-    </div>
-  </div>
-  <div class="scroll">
-    <div class="dvdr"></div>
-    <div class="pdf-prev-box" id="share-preview">
-      <div class="pdf-prev-top">
-        <div class="pdf-prev-title" id="sp-title">—</div>
-        <div class="pdf-prev-sub" id="sp-sub">—</div>
-      </div>
-      <div class="pdf-rows" id="sp-rows"></div>
-    </div>
-    <div class="sec-lbl">Paylaşım Yöntemi</div>
-
-    <div class="scard" onclick="shareWhatsApp()">
-      <div class="sico" style="background:#e8fdf0">💬</div>
-      <div class="sinfo"><div class="sname">WhatsApp ile Paylaş</div><div class="sdesc">Proje özeti formatlanmış metin olarak gönderilir</div></div>
-      <div class="sarr">›</div>
-    </div>
-    <div class="scard" onclick="printPDF()">
-      <div class="sico" style="background:var(--pr-bg)">📄</div>
-      <div class="sinfo"><div class="sname">PDF Oluştur / Yazdır</div><div class="sdesc">Tarayıcı baskı → "PDF olarak kaydet" seçin</div></div>
-      <div class="sarr">›</div>
-    </div>
-    <div class="scard" onclick="copyText()">
-      <div class="sico" style="background:#f5f0ff">📋</div>
-      <div class="sinfo"><div class="sname">Metni Kopyala</div><div class="sdesc">Telegram, mail veya not uygulamasına yapıştır</div></div>
-      <div class="sarr">›</div>
-    </div>
-    <div class="scard" onclick="shareMail()">
-      <div class="sico" style="background:var(--blu-bg)">📧</div>
-      <div class="sinfo"><div class="sname">E-Posta Hazırla</div><div class="sdesc">Varsayılan mail uygulaması açılır</div></div>
-      <div class="sarr">›</div>
-    </div>
-    <div style="height:20px;"></div>
-  </div>
-</div>
-
-</div><!-- /app -->
-
-<script>
-/* ─── STATE ─── */
-let projects = [];
-try { projects = JSON.parse(localStorage.getItem('tf_projects')||'[]'); } catch(e){}
-let currentProject = null;
-let shareProject = null;
-let screenStack = ['s-home'];
-let gpsText = '';
-let gpsCoords = null;
-let signCount = 0;
-let signPhotos = {};
-
-/* ─── NAV ─── */
-function go(id){
-  const cur = screenStack[screenStack.length-1];
-  if(cur===id) return;
-  document.getElementById(cur).classList.add('behind');
-  const next = document.getElementById(id);
-  next.classList.add('active');
-  next.classList.remove('behind');
-  screenStack.push(id);
-  onScreen(id);
-}
-function back(){
-  if(screenStack.length<2) return;
-  const cur = screenStack.pop();
-  const prev = screenStack[screenStack.length-1];
-  const cEl = document.getElementById(cur);
-  const pEl = document.getElementById(prev);
-  cEl.classList.remove('active');
-  pEl.classList.remove('behind');
-  onScreen(prev);
-}
-function onScreen(id){
-  if(id==='s-home') renderHome();
-  if(id==='s-new') initNew();
-  if(id==='s-share-list') renderShareList();
-}
-
-/* ─── GPS ─── */
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      gpsCoords={lat:pos.coords.latitude.toFixed(5),lng:pos.coords.longitude.toFixed(5)};
-      gpsText = gpsCoords.lat+', '+gpsCoords.lng;
-      document.getElementById('gps-bar').textContent = '📍 GPS: '+gpsText;
-      document.getElementById('new-gps-bar').textContent = '📍 GPS alındı: '+gpsText;
-    },
-    ()=>{
-      document.getElementById('gps-bar').textContent = '📍 Konum alınamadı';
-      document.getElementById('new-gps-bar').textContent = '📍 Konum alınamadı — adresi manuel girin';
-    }
-  );
-}
-
-/* ─── HOME ─── */
-function renderHome(){
-  document.getElementById('stat-total').textContent = projects.length;
-  document.getElementById('stat-wait').textContent = projects.filter(p=>p.status!=='Tamamlandı').length;
-  document.getElementById('stat-done').textContent = projects.filter(p=>p.status==='Tamamlandı').length;
-  const list = document.getElementById('proj-list');
-  if(!projects.length){
-    list.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Henüz proje yok</div><div class="empty-sub">Sağ üstteki "+ Yeni Proje" butonuna bas</div></div>`;
-    return;
-  }
-  const scls = {'Ölçüm Alındı':'sy','Üretimde':'sb','Montaj Bekliyor':'sy','Tamamlandı':'sg','Acil':'sr'};
-  const bcls = {'Ölçüm Alındı':'by','Üretimde':'bb','Montaj Bekliyor':'by','Tamamlandı':'bg','Acil':'br'};
-  list.innerHTML = [...projects].reverse().map((p,ri)=>{
-    const i = projects.length-1-ri;
-    const sc = scls[p.status]||'sb';
-    const bc = bcls[p.status]||'bb';
-    const camN = (p.signs||[]).filter(s=>s.type==='Cam Folyo').length;
-    const chips = (p.signs||[]).slice(0,3).map(s=>`<div class="chip ${s.type==='Cam Folyo'?'cam-c':''}">${s.label||s.type} <b>${s.w||'?'}×${s.h||'?'}m</b></div>`).join('');
-    const more = (p.signs||[]).length>3?`<div class="chip">+${p.signs.length-3}</div>`:'';
-    return `<div class="pcard ${sc}" onclick="openDetail(${i})">
-      <div class="pt">
-        <div><div class="pn">${p.project||'İsimsiz Proje'}</div><div class="pc">${p.client||'—'}</div></div>
-        <div class="badge ${bc}">${p.status}</div>
-      </div>
-      <div class="chips">${chips}${more}</div>
-      <div class="pf">
-        <div class="ploc">📍 ${p.address||p.gps||'—'}</div>
-        ${camN?`<div class="pph">🪟 ${camN} Folyo</div>`:''}
-        <div class="pdt">${p.date||''}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ─── SIGN TYPES ─── */
-const SIGN_TYPES=['Kutu Harf','Işıklı Tabela','Totem','LED Ekran','Vinil/Folyo Baskı','Cam Folyo','Yönlendirme','Dijital Baskı','Diğer'];
-const MONTAJ=['Duvar / Cephe','Cam','Direk / Kolon','Çatı','Zemin','Tavan / Asma'];
-
-/* ─── INIT NEW ─── */
-function initNew(){
-  ['f-client','f-project','f-address','f-note'].forEach(id=>{document.getElementById(id).value='';});
-  document.querySelectorAll('#status-sel .tc').forEach((t,i)=>t.classList.toggle('on',i===0));
-  signCount=0; signPhotos={};
-  document.getElementById('signs-container').innerHTML='';
-  document.getElementById('signs-empty').style.display='block';
-}
-
-/* ─── ADD SIGN ─── */
-function addSign(){
-  signCount++;
-  const id='sign-'+signCount;
-  signPhotos[id]=[];
-  document.getElementById('signs-empty').style.display='none';
-  const div=document.createElement('div');
-  div.className='sign-block'; div.id=id;
-  div.innerHTML=`
-    <div class="sign-hdr" onclick="toggleSign('${id}')">
-      <span class="sign-num">${signCount}</span>
-      <span class="sign-lbl" id="${id}-lbl">Tabela ${signCount}</span>
-      <span class="sign-type-tag" id="${id}-tag">Tür seçin</span>
-      <span class="sign-del" onclick="event.stopPropagation();removeSign('${id}')">✕</span>
-    </div>
-    <div class="sign-body" id="${id}-body">
-      <div class="ig">
-        <div class="il">Tabela Etiketi</div>
-        <input class="if" id="${id}-label" placeholder="Örn: Ana Giriş, Sol Cam, Ön Cephe..." oninput="document.getElementById('${id}-lbl').textContent=this.value||'Tabela ${signCount}'">
-      </div>
-      <div class="ig">
-        <div class="il">Tabela Tipi</div>
-        <select class="if" id="${id}-type" onchange="onTypeChange('${id}')">
-          <option value="">-- Seçin --</option>
-          ${SIGN_TYPES.map(t=>`<option>${t}</option>`).join('')}
-        </select>
-      </div>
-      <div class="ig">
-        <div class="il">Tabela Ölçüleri</div>
-        <div class="drow">
-          <div class="ig"><div class="il">Genişlik (m)</div><input class="if" id="${id}-w" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-          <div class="ig"><div class="il">Yükseklik (m)</div><input class="if" id="${id}-h" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-          <div class="ig"><div class="il">Derinlik (m)</div><input class="if" id="${id}-d" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-        </div>
-      </div>
-
-      <div id="${id}-cam-extra" style="display:none">
-        <div style="height:1px;background:var(--cam-bd);margin:4px 0 12px;"></div>
-        <div style="font-size:11px;font-weight:800;color:var(--cam);margin-bottom:10px;">🪟 CAM FOLYO BİLGİLERİ</div>
-        <div class="ig">
-          <div class="il" style="color:var(--cam)">Cam Yüzey Ölçüsü</div>
-          <div class="drow">
-            <div class="ig"><div class="il">Genişlik (m)</div><input class="if" id="${id}-cw" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-            <div class="ig"><div class="il">Yükseklik (m)</div><input class="if" id="${id}-ch" type="number" inputmode="decimal" placeholder="0.00" step="0.01"></div>
-          </div>
-        </div>
-        <div class="ig">
-          <div class="il" style="color:var(--cam)">Folyo Tipi</div>
-          <div class="tcsel" id="${id}-fsel">
-            ${['Mat','Parlak','Buzlu / Sandblast','Renkli Folyo','Baskılı Folyo','Güneşlik / Isı Kesen'].map(f=>`<div class="tc" onclick="selFolyo('${id}',this)">${f}</div>`).join('')}
-          </div>
-        </div>
-      </div>
-
-      <div class="ig">
-        <div class="il">Montaj Yeri</div>
-        <div class="tcsel">
-          ${MONTAJ.map(m=>`<div class="tc" onclick="selOne(this,'${id}-montaj')">${m}</div>`).join('')}
-        </div>
-        <input type="hidden" id="${id}-montaj" value="">
-      </div>
-
-      <div class="ig">
-        <div class="il">Fotoğraf</div>
-        <div class="pzone">
-          <input type="file" accept="image/*" multiple onchange="addPhotos('${id}',this)">
-          <div class="pz-ico">📸</div>
-          <div class="pz-txt">Fotoğraf seç veya çek</div>
-          <div class="pz-sub">Birden fazla ekleyebilirsiniz</div>
-        </div>
-        <div class="pgrid" id="${id}-photos"></div>
-      </div>
-
-      <div class="ig">
-        <div class="il">Tabela Notu</div>
-        <textarea class="if" id="${id}-note" placeholder="Bu tabela için engel, özel not, dikkat edilmesi gereken..."></textarea>
-      </div>
-    </div>
-  `;
-  document.getElementById('signs-container').appendChild(div);
-  setTimeout(()=>div.scrollIntoView({behavior:'smooth',block:'start'}),120);
-}
-
-function toggleSign(id){
-  const b=document.getElementById(id+'-body');
-  b.style.display=b.style.display==='none'?'':'none';
-}
-function removeSign(id){
-  document.getElementById(id).remove();
-  delete signPhotos[id];
-  if(!document.getElementById('signs-container').children.length)
-    document.getElementById('signs-empty').style.display='block';
-}
-function onTypeChange(id){
-  const v=document.getElementById(id+'-type').value;
-  document.getElementById(id+'-tag').textContent=v||'Tür seçin';
-  document.getElementById(id+'-cam-extra').style.display=v==='Cam Folyo'?'':'none';
-}
-function selOne(el,hidId){
-  el.closest('.tcsel').querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById(hidId).value=el.textContent;
-}
-function selFolyo(sid,el){
-  document.getElementById(sid+'-fsel').querySelectorAll('.tc').forEach(t=>t.classList.remove('cam-on','on'));
-  el.classList.add('cam-on');
-}
-function selStatus(el){
-  document.querySelectorAll('#status-sel .tc').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-}
-
-/* ─── PHOTOS ─── */
-function addPhotos(sid,inp){
-  Array.from(inp.files).forEach(file=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      signPhotos[sid]=signPhotos[sid]||[];
-      signPhotos[sid].push({dataUrl:e.target.result,note:''});
-      renderPhotos(sid);
-    };
-    r.readAsDataURL(file);
-  });
-  inp.value='';
-}
-function renderPhotos(sid){
-  document.getElementById(sid+'-photos').innerHTML=(signPhotos[sid]||[]).map((p,i)=>`
-    <div class="pthumb">
-      <img src="${p.dataUrl}">
-      <div class="pthumb-del" onclick="removePhoto('${sid}',${i})">✕</div>
-      <div class="pthumb-note" onclick="editNote('${sid}',${i})">${p.note||'+ Not'}</div>
-    </div>
-  `).join('');
-}
-function removePhoto(sid,i){signPhotos[sid].splice(i,1);renderPhotos(sid);}
-function editNote(sid,i){
-  const n=prompt('Bu fotoğraf için not (ölçü, yön vb.):',signPhotos[sid][i].note||'');
-  if(n!==null){signPhotos[sid][i].note=n;renderPhotos(sid);}
-}
-
-/* ─── SAVE ─── */
-function saveProject(){
-  const client=document.getElementById('f-client').value.trim();
-  const project=document.getElementById('f-project').value.trim();
-  if(!client&&!project){toast('Müşteri veya proje adı girin','err');return;}
-  const signs=[];
-  document.querySelectorAll('#signs-container .sign-block').forEach(bl=>{
-    const id=bl.id;
-    const type=document.getElementById(id+'-type').value;
-    const label=document.getElementById(id+'-label').value.trim();
-    const w=document.getElementById(id+'-w').value;
-    const h=document.getElementById(id+'-h').value;
-    const d=document.getElementById(id+'-d').value;
-    const note=document.getElementById(id+'-note').value.trim();
-    const montaj=document.getElementById(id+'-montaj').value;
-    const photos=(signPhotos[id]||[]).map(p=>({dataUrl:p.dataUrl,note:p.note}));
-    const isCam=type==='Cam Folyo';
-    const cw=isCam?document.getElementById(id+'-cw').value:'';
-    const ch=isCam?document.getElementById(id+'-ch').value:'';
-    const fc=isCam?document.querySelector(`#${id}-fsel .cam-on`):null;
-    const folio=fc?fc.textContent:'';
-    signs.push({type,label,w,h,d,note,montaj,photos,cw,ch,folio});
-  });
-  const status=document.querySelector('#status-sel .on')?.dataset.val||'Ölçüm Alındı';
-  const now=new Date();
-  const dateStr=now.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  projects.push({client,project,address:document.getElementById('f-address').value.trim(),note:document.getElementById('f-note').value.trim(),status,signs,gps:gpsText,gpsCoords,date:dateStr});
-  try{localStorage.setItem('tf_projects',JSON.stringify(projects));}catch(e){toast('Depolama hatası','err');}
-  toast('Proje kaydedildi ✓');
-  setTimeout(()=>{back();renderHome();},350);
-}
-
-/* ─── DETAIL ─── */
-function getBadge(s){return{Tamamlandı:'bg',Acil:'br',Üretimde:'bb'}[s]||'by';}
-function openDetail(idx){
-  currentProject=idx;
-  const p=projects[idx];
-  document.getElementById('det-title').textContent=p.project||'Proje';
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w)||0)*(parseFloat(s.h)||0),0);
-  const camN=(p.signs||[]).filter(s=>s.type==='Cam Folyo').length;
-  const scroll=document.getElementById('det-scroll');
-  scroll.innerHTML=`
-    <div class="det-hero">
-      <div class="det-name">${p.project||'—'}</div>
-      <div class="det-client">${p.client||'—'} · ${p.date||''}</div>
-      <div style="margin-top:10px"><span class="badge ${getBadge(p.status)}">${p.status}</span></div>
-    </div>
-    <div class="dvdr"></div>
-    <div class="fsec">
-      <div class="fst">📊 Özet</div>
-      <div class="grid2">
-        <div class="mc"><div class="mn">${p.signs?.length||0}</div><div class="ml">Ölçüm Sayısı</div></div>
-        <div class="mc"><div class="mn hl">${totalArea.toFixed(2)}</div><div class="ml">Toplam Alan m²</div></div>
-        ${camN?`<div class="mc"><div class="mn cam">${camN}</div><div class="ml">Cam Folyo</div></div>`:''}
-      </div>
-    </div>
-    <div class="dvdr"></div>
-    <div class="fsec">
-      <div class="fst">🪧 Tabelalar (${p.signs?.length||0})</div>
-      ${(p.signs||[]).map((s,i)=>{
-        const area=parseFloat(s.w||0)*parseFloat(s.h||0);
-        const photos=(s.photos||[]).length?`<div class="pgrid" style="margin-top:8px">${s.photos.map(ph=>`<div class="pthumb"><img src="${ph.dataUrl}">${ph.note?`<div class="pthumb-note">${ph.note}</div>`:''}</div>`).join('')}</div>`:'';
-        return `<div class="sign-det">
-          <div class="sd-top">
-            <span class="sd-num">${i+1}</span>
-            <span class="sd-name">${s.label||s.type||'Tabela '+(i+1)}</span>
-            <span class="sd-type">${s.type||''}</span>
-          </div>
-          <div class="sd-dims">
-            ${s.w?`<div class="chip">G: <b>${s.w}m</b></div>`:''}
-            ${s.h?`<div class="chip">Y: <b>${s.h}m</b></div>`:''}
-            ${s.d?`<div class="chip">D: <b>${s.d}m</b></div>`:''}
-            ${area?`<div class="chip">Alan: <b>${area.toFixed(2)}m²</b></div>`:''}
-            ${s.type==='Cam Folyo'&&s.cw?`<div class="chip cam-c">Cam: <b>${s.cw}×${s.ch}m</b></div>`:''}
-            ${s.folio?`<div class="chip cam-c">${s.folio}</div>`:''}
-            ${s.montaj?`<div class="chip" style="color:var(--ylw)">📍 ${s.montaj}</div>`:''}
-          </div>
-          ${s.note?`<div class="note-box">📝 ${s.note}</div>`:''}
-          ${photos}
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="dvdr"></div>
-    <div class="fsec">
-      <div class="fst">📍 Konum</div>
-      <div class="gps-bar" style="margin:0">${p.address||''} ${p.gps||'Konum bilgisi yok'}</div>
-    </div>
-    ${p.note?`<div class="dvdr"></div><div class="fsec"><div class="fst">📝 Genel Not</div><div style="background:var(--ylw-bg);border:1px solid var(--ylw-bd);border-radius:var(--r3);padding:10px 12px;font-size:13px;color:var(--ylw);font-weight:600;line-height:1.6">${p.note}</div></div>`:''}
-    <div class="dvdr"></div>
-    <div style="padding:16px;display:flex;gap:10px;">
-      <button class="abtn ghost" style="flex:1" onclick="shareThis(${idx});go('s-share')">📤 Paylaş</button>
-      <button class="abtn" style="flex:1" onclick="shareThis(${idx});printPDF()">📄 PDF</button>
-    </div>
-  `;
-  go('s-detail');
-}
-function deleteProject(){
-  if(!confirm('Bu projeyi silmek istiyor musunuz?')) return;
-  projects.splice(currentProject,1);
-  try{localStorage.setItem('tf_projects',JSON.stringify(projects));}catch(e){}
-  back();renderHome();
-}
-
-/* ─── SHARE LIST ─── */
-function renderShareList(){
-  const list=document.getElementById('share-proj-list');
-  if(!projects.length){list.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Paylaşılacak proje yok</div></div>`;return;}
-  list.innerHTML=[...projects].reverse().map((p,ri)=>{
-    const i=projects.length-1-ri;
-    return `<div class="pcard sy" onclick="shareThis(${i});go('s-share')">
-      <div class="pt"><div><div class="pn">${p.project||'İsimsiz'}</div><div class="pc">${p.client||'—'}</div></div>
-      <div class="badge ${getBadge(p.status)}">${p.status}</div></div>
-      <div class="pf"><div class="ploc">📍 ${p.address||p.gps||'—'}</div><div class="pdt">${p.date||''}</div></div>
-    </div>`;
-  }).join('');
-}
-
-/* ─── SHARE ─── */
-function shareThis(idx){
-  shareProject=idx;
-  const p=projects[idx];
-  document.getElementById('sp-title').textContent=(p.project||'—').toUpperCase();
-  document.getElementById('sp-sub').textContent=`${p.client||'—'} · ${p.date||''}`;
-  document.getElementById('sp-rows').innerHTML=[
-    ['Müşteri',p.client||'—'],
-    ['Proje',p.project||'—'],
-    ['Tabela Sayısı',(p.signs?.length||0)+' adet'],
-    ['Toplam Alan',((p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0)).toFixed(2)+' m²'],
-    ['Durum',p.status||'—'],
-    ['Konum',p.address||p.gps||'—'],
-  ].map(([k,v])=>`<div class="pr"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('');
-}
-
-function buildText(){
-  const p=projects[shareProject];
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0);
-  const lines=[
-    `🪧 *TABERA FIELD — PROJE RAPORU*`,``,
-    `📋 *Müşteri:* ${p.client||'—'}`,
-    `📌 *Proje:* ${p.project||'—'}`,
-    `📅 *Tarih:* ${p.date||'—'}`,
-    `🔖 *Durum:* ${p.status||'—'}`,
-    `📍 *Konum:* ${p.address||''} ${p.gps||''}`,
-    `📐 *Toplam Alan:* ${totalArea.toFixed(2)} m²`,``,
-    `━━━━━━━━━━━━━━━━━`,
-    `🪧 *TABELALAR (${p.signs?.length||0} adet)*`,
-    `━━━━━━━━━━━━━━━━━`,
-  ];
-  (p.signs||[]).forEach((s,i)=>{
-    lines.push(``);
-    lines.push(`*${i+1}. ${s.label||s.type||'Tabela '+(i+1)}*`);
-    lines.push(`   Tür: ${s.type||'—'}`);
-    if(s.w||s.h) lines.push(`   Ölçü: ${s.w||'?'} × ${s.h||'?'}${s.d?' × '+s.d:''} m`);
-    if(s.w&&s.h) lines.push(`   Alan: ${(parseFloat(s.w)*parseFloat(s.h)).toFixed(2)} m²`);
-    if(s.type==='Cam Folyo'&&s.cw) lines.push(`   Cam Yüzeyi: ${s.cw} × ${s.ch} m`);
-    if(s.folio) lines.push(`   Folyo Tipi: ${s.folio}`);
-    if(s.montaj) lines.push(`   Montaj: ${s.montaj}`);
-    if(s.note) lines.push(`   Not: ${s.note}`);
-    if((s.photos||[]).length) lines.push(`   Fotoğraf: ${s.photos.length} adet (PDF'te görünür)`);
-  });
-  if(p.note){lines.push(``);lines.push(`📝 *Genel Not:* ${p.note}`);}
-  lines.push(``);lines.push(`_TaberaField Saha Uygulaması_`);
-  return lines.join('\n');
-}
-function shareWhatsApp(){window.open('https://wa.me/?text='+encodeURIComponent(buildText()),'_blank');}
-function copyText(){
-  const txt=buildText();
-  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>toast('Kopyalandı ✓'));}
-  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Kopyalandı ✓');}
-}
-function shareMail(){
-  const p=projects[shareProject];
-  window.location.href=`mailto:?subject=${encodeURIComponent('TaberaField: '+p.project+' — '+p.client)}&body=${encodeURIComponent(buildText().replace(/\*/g,''))}`;
-}
-
-/* ─── PDF ─── */
-function printPDF(){
-  const p=projects[shareProject||currentProject];
-  if(!p){toast('Önce proje seçin','err');return;}
-  const now=new Date().toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const totalArea=(p.signs||[]).reduce((a,s)=>a+(parseFloat(s.w||0)*parseFloat(s.h||0)),0);
-  const signsHtml=(p.signs||[]).map((s,i)=>{
-    const isCam=s.type==='Cam Folyo';
-    const area=parseFloat(s.w||0)*parseFloat(s.h||0);
-    const photos=(s.photos||[]).length?
-      `<div style="margin-top:10px;font-size:10px;font-weight:800;color:#999;margin-bottom:5px;">FOTOĞRAFLAR</div>
-       <div class="pdf-photos">${s.photos.map(ph=>`<div class="pdf-photo"><img src="${ph.dataUrl}">${ph.note?`<div class="pdf-photo-note">${ph.note}</div>`:''}</div>`).join('')}</div>`:'';
-    return `<div class="pdf-sign ${isCam?'pdf-cam-sign':''}">
-      <div class="pdf-stop">
-        <div class="pdf-stop-t">${i+1}. ${s.label||s.type||'Tabela '+(i+1)}</div>
-        <div class="pdf-stop-s">${s.type||''}</div>
-      </div>
-      <div class="pdf-sbody">
-        <div class="pdf-dims">
-          <div class="pdf-dc"><div class="pdf-dv">${s.w||'—'}</div><div class="pdf-dk">Gen. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv">${s.h||'—'}</div><div class="pdf-dk">Yük. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv">${s.d||'—'}</div><div class="pdf-dk">Der. (m)</div></div>
-          <div class="pdf-dc"><div class="pdf-dv" style="color:#222">${area?area.toFixed(2):'—'}</div><div class="pdf-dk">Alan m²</div></div>
-        </div>
-        ${isCam&&s.cw?`<div class="pdf-cam-box">🪟 Cam Yüzeyi: ${s.cw} × ${s.ch} m &nbsp;|&nbsp; Folyo: ${s.folio||'—'}</div>`:''}
-        ${s.montaj?`<span class="pdf-montaj">📍 ${s.montaj}</span>`:''}
-        ${s.note?`<div class="pdf-note-box">📝 ${s.note}</div>`:''}
-        ${photos}
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('pdf-content').innerHTML=`
-    <div class="pdf-brand">
-      <div>
-        <div class="pdf-brand-logo">TABERA<span>FIELD</span></div>
-        <div style="font-size:11px;color:#888;margin-top:2px;">Saha Ölçüm & Proje Raporu</div>
-      </div>
-      <div class="pdf-brand-right">Oluşturulma: ${now}<br>TaberaField Saha Uygulaması</div>
-    </div>
-    <div class="pdf-sec-title">Proje Bilgileri</div>
-    <div class="pdf-info-grid">
-      <div class="pdf-ic"><div class="pdf-ik">Müşteri / Firma</div><div class="pdf-iv">${p.client||'—'}</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Proje Adı</div><div class="pdf-iv">${p.project||'—'}</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Durum</div><div class="pdf-iv">${p.status||'—'}</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Tarih</div><div class="pdf-iv">${p.date||now}</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Tabela Sayısı</div><div class="pdf-iv">${p.signs?.length||0} adet</div></div>
-      <div class="pdf-ic"><div class="pdf-ik">Toplam Alan</div><div class="pdf-iv">${totalArea.toFixed(2)} m²</div></div>
-    </div>
-    ${p.gps||p.address?`<div class="pdf-gps">📍 Konum: ${p.address||''} ${p.gps||''}</div>`:''}
-    <div class="pdf-sec-title">Tabela Ölçümleri (${p.signs?.length||0} Adet)</div>
-    ${signsHtml}
-    ${p.note?`<div class="pdf-sec-title">Genel Saha Notu</div><div class="pdf-note-box" style="font-size:12px">${p.note}</div>`:''}
-    <div class="pdf-footer"><span>TaberaField — Reklam & Tabela Saha Uygulaması</span><span>Bu belge dijital olarak oluşturulmuştur.</span></div>
-  `;
-  const doc=document.getElementById('pdf-doc');
-  doc.style.display='block';
-  setTimeout(()=>{window.print();setTimeout(()=>{doc.style.display='none';},500);},300);
-}
-
-/* ─── TOAST ─── */
-function toast(msg,type='ok'){
-  const t=document.getElementById('toast');
-  document.getElementById('tmsg').textContent=msg;
-  t.className='toast show'+(type==='err'?' err':'');
-  setTimeout(()=>t.classList.remove('show'),2600);
-}
-
-/* ─── BOOT ─── */
-renderHome();
-</script>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="tr"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="mobile-web-app-capable" content="yes"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-status-bar-style" content="default"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;title&gt;TaberaField Pro&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1">&lt;link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;style&gt;</span></p>
+<p class="p1"><span class="s1">:root{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--pr: #F97316; --pr-dark: #EA580C; --pr-bg: #FFF7ED; --pr-bd: #FFEDD5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--bg: #F8FAFC; --card: #FFFFFF; --bd: #E2E8F0; --txt: #0F172A; --txt2: #475569;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--txt3: #94A3B8; --grn: #10B981; --blu: #3B82F6; --red: #EF4444; --cam: #0EA5E9;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--sh: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}</span></p>
+<p class="p1"><span class="s1">body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--txt);overflow:hidden;height:100vh;}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* APP CONTAINER */</span></p>
+<p class="p1"><span class="s1">.app{width:100%;max-width:430px;height:100%;margin:0 auto;position:relative;background:var(--bg);display:flex;flex-direction:column;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* SCREEN SYSTEM */</span></p>
+<p class="p1"><span class="s1">.scr{position:absolute;inset:0;background:var(--bg);transform:translateX(100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:1;display:flex;flex-direction:column;}</span></p>
+<p class="p1"><span class="s1">.scr.active{transform:translateX(0);z-index:2;}</span></p>
+<p class="p1"><span class="s1">.scroll{flex:1;overflow-y:auto;padding-bottom:100px;scrollbar-width:none;}</span></p>
+<p class="p1"><span class="s1">.scroll::-webkit-scrollbar{display:none;}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* TOPBAR */</span></p>
+<p class="p1"><span class="s1">.topbar{height:64px;background:#fff;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--bd);gap:15px;flex-shrink:0;}</span></p>
+<p class="p1"><span class="s1">.topbar-logo{font-size:22px;font-weight:900;letter-spacing:-0.5px;}</span></p>
+<p class="p1"><span class="s1">.topbar-logo em{color:var(--pr);font-style:normal;}</span></p>
+<p class="p1"><span class="s1">.topbar-back{width:40px;height:40px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* CARDS */</span></p>
+<p class="p1"><span class="s1">.pcard{margin:15px;background:#fff;border-radius:20px;padding:18px;border:1px solid var(--bd);box-shadow:var(--sh);cursor:pointer;position:relative;overflow:hidden;}</span></p>
+<p class="p1"><span class="s1">.pcard::after{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pr);}</span></p>
+<p class="p1"><span class="s1">.pcard.sg::after{background:var(--grn);}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* BUTTONS */</span></p>
+<p class="p1"><span class="s1">.abtn{background:linear-gradient(135deg, var(--pr), var(--pr-dark));color:#fff;border:none;padding:16px;border-radius:15px;font-weight:800;font-size:15px;width:100%;cursor:pointer;box-shadow:0 10px 15px -3px rgba(249,115,22,0.3);}</span></p>
+<p class="p1"><span class="s1">.abtn:active{transform:scale(0.98);}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* FORM ELEMENTS */</span></p>
+<p class="p1"><span class="s1">.fsec{background:#fff;padding:20px;margin-bottom:10px;border-bottom:1px solid var(--bd);}</span></p>
+<p class="p1"><span class="s1">.if{width:100%;background:var(--bg);border:2px solid var(--bd);border-radius:12px;padding:12px;font-family:inherit;font-size:15px;outline:none;margin-top:5px;}</span></p>
+<p class="p1"><span class="s1">.if:focus{border-color:var(--pr);}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* PDF &amp; PRINT STYLES */</span></p>
+<p class="p1"><span class="s1">@media print {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body, .app { background: white !important; height: auto !important; overflow: visible !important; width: 100% !important; max-width: none !important; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.bnav, .topbar, .toast, .fab-wrap, .abtn { display: none !important; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#pdf-doc { display: block !important; position: static !important; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.pdf-page { width: 100%; padding: 0; margin: 0; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.pdf-sign { page-break-inside: avoid; break-inside: avoid; border: 1px solid #eee; margin-bottom: 20px; }</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">#pdf-doc{display:none;position:fixed;inset:0;background:white;z-index:9999;overflow:auto;}</span></p>
+<p class="p1"><span class="s1">.pdf-page{padding:20px;max-width:800px;margin:0 auto;}</span></p>
+<p class="p1"><span class="s1">.pdf-header{display:flex;justify-content:space-between;border-bottom:3px solid var(--pr);padding-bottom:15px;margin-bottom:20px;}</span></p>
+<p class="p1"><span class="s1">.pdf-grid{display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;}</span></p>
+<p class="p1"><span class="s1">.pdf-item{background:#f8fafc; padding:12px; border-radius:10px;}</span></p>
+<p class="p1"><span class="s1">.pdf-label{font-size:10px; color:var(--txt3); text-transform:uppercase; font-weight:800;}</span></p>
+<p class="p1"><span class="s1">.pdf-val{font-size:14px; font-weight:800;}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.pdf-sign{border-radius:12px; overflow:hidden; border:1px solid var(--bd); margin-bottom:20px;}</span></p>
+<p class="p1"><span class="s1">.pdf-s-head{background:var(--pr); color:white; padding:10px 15px; font-weight:800; display:flex; justify-content:space-between;}</span></p>
+<p class="p1"><span class="s1">.pdf-s-body{padding:15px;}</span></p>
+<p class="p1"><span class="s1">.pdf-measures{display:flex; gap:10px; margin-bottom:15px;}</span></p>
+<p class="p1"><span class="s1">.pdf-m-box{flex:1; background:#f1f5f9; padding:10px; border-radius:8px; text-align:center;}</span></p>
+<p class="p1"><span class="s1">.pdf-m-val{font-size:18px; font-weight:900; color:var(--pr);}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">/* BOTTOM NAV */</span></p>
+<p class="p1"><span class="s1">.bnav{position:absolute;bottom:0;width:100%;height:70px;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:10;}</span></p>
+<p class="p1"><span class="s1">.ni{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--txt3);cursor:pointer;}</span></p>
+<p class="p1"><span class="s1">.ni.on{color:var(--pr);}</span></p>
+<p class="p1"><span class="s1">.fab{width:55px;height:55px;background:var(--pr);border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin-top:-35px;box-shadow:0 8px 15px rgba(249,115,22,0.4);border:4px solid #fff;}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }</span></p>
+<p class="p1"><span class="s1">.pthumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #eee; position: relative; }</span></p>
+<p class="p1"><span class="s1">.pthumb img { width: 100%; height: 100%; object-fit: cover; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">.toast{position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:var(--txt); color:white; padding:12px 25px; border-radius:30px; font-weight:700; transition:0.4s; z-index:10000; box-shadow:0 10px 20px rgba(0,0,0,0.2);}</span></p>
+<p class="p1"><span class="s1">.toast.show{transform:translateX(-50%) translateY(0);}</span></p>
+<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div id="toast" class="toast"&gt;İşlem Başarılı&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div id="pdf-doc"&gt;&lt;div class="pdf-page" id="pdf-content"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;div class="app"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr active" id="s-home"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-logo"&gt;TABERA&lt;em&gt;FIELD&lt;/em&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="flex:1"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-size:20px" onclick="location.reload()"&gt;🔄&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="proj-list"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="bnav"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="ni on" onclick="go('s-home')"&gt;🏠&lt;span style="font-size:10px"&gt;Ana Sayfa&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fab" onclick="go('s-new')"&gt;＋&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="ni" onclick="go('s-home')"&gt;📋&lt;span style="font-size:10px"&gt;Projeler&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr" id="s-new"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-back" onclick="back()"&gt;←&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:800"&gt;Yeni Ölçüm Kaydı&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fsec"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;label style="font-weight:800; font-size:12px; color:var(--pr)"&gt;MÜŞTERİ BİLGİLERİ&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input class="if" id="f-client" placeholder="Müşteri / Firma Adı"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input class="if" id="f-project" placeholder="Proje / İş Adı"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fsec"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;label style="font-weight:800; font-size:12px; color:var(--pr)"&gt;TABELALAR&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;button onclick="addSign()" style="background:var(--pr-bg); border:1px solid var(--pr-bd); color:var(--pr); padding:5px 12px; border-radius:8px; font-weight:800; font-size:12px"&gt;+ EKLE&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div id="signs-container"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="padding:20px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" onclick="saveProject()"&gt;💾 PROJEYİ KAYDET&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr" id="s-share"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-back" onclick="back()"&gt;←&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:800"&gt;Paylaşım Seçenekleri&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll" style="padding:20px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="share-summary" style="background:#fff; padding:20px; border-radius:20px; margin-bottom:20px; border:1px solid var(--bd)"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;h3 id="sh-title" style="margin-bottom:5px"&gt;---&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;p id="sh-client" style="color:var(--txt3); font-size:14px"&gt;---&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="display:grid; gap:15px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#25D366;" onclick="shareWhatsApp()"&gt;🟢 WhatsApp ile Gönder&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#DC2626;" onclick="printPDF()"&gt;🔴 PDF Olarak Kaydet / Yazdır&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#64748b;" onclick="copyText()"&gt;⚪ Metni Kopyala&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;script&gt;</span></p>
+<p class="p1"><span class="s1">let projects = JSON.parse(localStorage.getItem('tf_pro_data') || '[]');</span></p>
+<p class="p1"><span class="s1">let currentProjectIdx = null;</span></p>
+<p class="p1"><span class="s1">let signCount = 0;</span></p>
+<p class="p1"><span class="s1">let signPhotos = {};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function go(id) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelectorAll('.scr').forEach(s =&gt; s.classList.remove('active'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById(id).classList.add('active');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function back() { go('s-home'); }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function toast(m) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const t = document.getElementById('toast');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>t.textContent = m;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>t.classList.add('show');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; t.classList.remove('show'), 2000);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function addSign() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>signCount++;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const id = `sign-${signCount}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>signPhotos[id] = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const div = document.createElement('div');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.className = 'fsec';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.border = '1px solid #eee';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.borderRadius = '15px';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.padding = '15px';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.marginBottom = '15px';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.innerHTML = `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="display:flex; justify-content:space-between; margin-bottom:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span style="font-weight:900; color:var(--pr)"&gt;#${signCount}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span onclick="this.parentElement.parentElement.remove()" style="color:var(--red); font-weight:800; cursor:pointer"&gt;SİL&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;input class="if" id="${id}-label" placeholder="Tabela Tanımı (Örn: Giriş Kapısı)"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;select class="if" id="${id}-type"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;option&gt;Kutu Harf&lt;/option&gt;&lt;option&gt;Işıklı Tabela&lt;/option&gt;&lt;option&gt;Vinil Germe&lt;/option&gt;&lt;option&gt;Cam Folyo&lt;/option&gt;&lt;option&gt;Diğer&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="display:flex; gap:10px; margin-top:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input class="if" id="${id}-w" type="number" placeholder="En (m)"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input class="if" id="${id}-h" type="number" placeholder="Boy (m)"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="margin-top:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input type="file" accept="image/*" multiple onchange="handlePhotos('${id}', this)" style="font-size:12px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="${id}-prev" class="pgrid"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('signs-container').appendChild(div);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function handlePhotos(sid, input) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Array.from(input.files).forEach(file =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const reader = new FileReader();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>reader.onload = e =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>signPhotos[sid].push(e.target.result);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderPrev(sid);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>reader.readAsDataURL(file);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function renderPrev(sid) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cont = document.getElementById(`${sid}-prev`);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cont.innerHTML = signPhotos[sid].map(src =&gt; `&lt;div class="pthumb"&gt;&lt;img src="${src}"&gt;&lt;/div&gt;`).join('');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function saveProject() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const client = document.getElementById('f-client').value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const project = document.getElementById('f-project').value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(!client) return toast("Müşteri adı boş olamaz!");</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const signs = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelectorAll('#signs-container &gt; div').forEach((div, idx) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const id = `sign-${idx + 1}`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>signs.push({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>label: document.getElementById(`${id}-label`)?.value || 'İsimsiz',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type: document.getElementById(`${id}-type`)?.value,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>w: document.getElementById(`${id}-w`)?.value,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>h: document.getElementById(`${id}-h`)?.value,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>photos: signPhotos[id] || []</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>projects.push({ client, project, signs, date: new Date().toLocaleString('tr-TR') });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>localStorage.setItem('tf_pro_data', JSON.stringify(projects));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast("Proje Başarıyla Kaydedildi!");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>renderHome();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>go('s-home');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function renderHome() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const list = document.getElementById('proj-list');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(projects.length === 0) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>list.innerHTML = `&lt;div style="text-align:center; padding:50px; color:#94a3b8"&gt;Henüz proje eklenmemiş.&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>list.innerHTML = projects.map((p, i) =&gt; `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pcard" onclick="openShare(${i})"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:900; font-size:16px"&gt;${p.project || 'İsimsiz Proje'}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="color:var(--txt2); font-size:13px"&gt;${p.client}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span style="font-size:11px; background:var(--pr-bg); color:var(--pr); padding:4px 8px; border-radius:6px; font-weight:800"&gt;${p.signs.length} Tabela&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span style="font-size:10px; color:var(--txt3)"&gt;${p.date}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`).reverse().join('');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function openShare(i) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>currentProjectIdx = i;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[i];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('sh-title').textContent = p.project || 'İsimsiz Proje';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('sh-client').textContent = p.client;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>go('s-share');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function buildText() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[currentProjectIdx];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let text = `*🏗️ TABERA FIELD PROJE RAPORU*\n\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Müşteri:* ${p.client}\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Proje:* ${p.project}\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Tarih:* ${p.date}\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `\n---------------------------\n`;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>p.signs.forEach((s, idx) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `\n*${idx+1}. ${s.label}*\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `Type: ${s.type}\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `Ölçü: ${s.w || '?'}m x ${s.h || '?'}m\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if(s.w &amp;&amp; s.h) text += `Alan: ${(s.w * s.h).toFixed(2)} m2\n`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `\n_TaberaField Mobile tarafından oluşturuldu._`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return text;</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function shareWhatsApp() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const txt = encodeURIComponent(buildText());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>window.open(`https://wa.me/?text=${txt}`, '_blank');</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function copyText() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>navigator.clipboard.writeText(buildText());</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast("Metin kopyalandı!");</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">function printPDF() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[currentProjectIdx];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let html = `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pdf-header"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div&gt;&lt;h1 style="color:var(--pr)"&gt;TABERA FIELD&lt;/h1&gt;&lt;p&gt;Saha Ölçüm &amp; Teknik Rapor&lt;/p&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="text-align:right"&gt;&lt;strong&gt;Tarih:&lt;/strong&gt;&lt;br&gt;${p.date}&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pdf-grid"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-item"&gt;&lt;div class="pdf-label"&gt;Müşteri / Firma&lt;/div&gt;&lt;div class="pdf-val"&gt;${p.client}&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-item"&gt;&lt;div class="pdf-label"&gt;Proje Adı&lt;/div&gt;&lt;div class="pdf-val"&gt;${p.project}&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>p.signs.forEach((s, idx) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const area = (s.w * s.h).toFixed(2);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>html += `</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-sign"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="pdf-s-head"&gt;&lt;span&gt;${idx+1}. ${s.label}&lt;/span&gt;&lt;span&gt;${s.type}&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="pdf-s-body"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="pdf-measures"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val"&gt;${s.w || '-'}&lt;/div&gt;&lt;div class="pdf-label"&gt;GENİŞLİK (M)&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val"&gt;${s.h || '-'}&lt;/div&gt;&lt;div class="pdf-label"&gt;YÜKSEKLİK (M)&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val" style="color:var(--txt)"&gt;${area}&lt;/div&gt;&lt;div class="pdf-label"&gt;ALAN (M2)&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="pgrid"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>${s.photos.map(src =&gt; `&lt;div class="pthumb"&gt;&lt;img src="${src}"&gt;&lt;/div&gt;`).join('')}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('pdf-content').innerHTML = html;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const doc = document.getElementById('pdf-doc');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>doc.style.display = 'block';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>window.print();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>doc.style.display = 'none';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}, 500);</span></p>
+<p class="p1"><span class="s1">}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">renderHome();</span></p>
+<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
 </body>
 </html>
