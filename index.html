@@ -1,364 +1,346 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="tr">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    body {background-color: #edeff2}
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Times; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #1fa045}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Times; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #1fa045; min-height: 16.0px}
-    span.s1 {font-kerning: none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>TaberaField Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pr: #F97316; --pr-dark: #EA580C; --pr-bg: #FFF7ED; --pr-bd: #FFEDD5;
+  --bg: #F8FAFC; --card: #FFFFFF; --bd: #E2E8F0; --txt: #0F172A; --txt2: #475569;
+  --txt3: #94A3B8; --grn: #10B981; --blu: #3B82F6; --red: #EF4444; --cam: #0EA5E9;
+  --sh: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--txt);overflow:hidden;height:100vh;}
+
+/* APP CONTAINER */
+.app{width:100%;max-width:430px;height:100%;margin:0 auto;position:relative;background:var(--bg);display:flex;flex-direction:column;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);}
+
+/* SCREEN SYSTEM */
+.scr{position:absolute;inset:0;background:var(--bg);transform:translateX(100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:1;display:flex;flex-direction:column;}
+.scr.active{transform:translateX(0);z-index:2;}
+.scroll{flex:1;overflow-y:auto;padding-bottom:100px;scrollbar-width:none;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* TOPBAR */
+.topbar{height:64px;background:#fff;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--bd);gap:15px;flex-shrink:0;}
+.topbar-logo{font-size:22px;font-weight:900;letter-spacing:-0.5px;}
+.topbar-logo em{color:var(--pr);font-style:normal;}
+.topbar-back{width:40px;height:40px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}
+
+/* CARDS */
+.pcard{margin:15px;background:#fff;border-radius:20px;padding:18px;border:1px solid var(--bd);box-shadow:var(--sh);cursor:pointer;position:relative;overflow:hidden;}
+.pcard::after{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pr);}
+.pcard.sg::after{background:var(--grn);}
+
+/* BUTTONS */
+.abtn{background:linear-gradient(135deg, var(--pr), var(--pr-dark));color:#fff;border:none;padding:16px;border-radius:15px;font-weight:800;font-size:15px;width:100%;cursor:pointer;box-shadow:0 10px 15px -3px rgba(249,115,22,0.3);}
+.abtn:active{transform:scale(0.98);}
+
+/* FORM ELEMENTS */
+.fsec{background:#fff;padding:20px;margin-bottom:10px;border-bottom:1px solid var(--bd);}
+.if{width:100%;background:var(--bg);border:2px solid var(--bd);border-radius:12px;padding:12px;font-family:inherit;font-size:15px;outline:none;margin-top:5px;}
+.if:focus{border-color:var(--pr);}
+
+/* PDF & PRINT STYLES */
+@media print {
+    body, .app { background: white !important; height: auto !important; overflow: visible !important; width: 100% !important; max-width: none !important; }
+    .bnav, .topbar, .toast, .fab-wrap, .abtn { display: none !important; }
+    #pdf-doc { display: block !important; position: static !important; }
+    .pdf-page { width: 100%; padding: 0; margin: 0; }
+    .pdf-sign { page-break-inside: avoid; break-inside: avoid; border: 1px solid #eee; margin-bottom: 20px; }
+}
+
+#pdf-doc{display:none;position:fixed;inset:0;background:white;z-index:9999;overflow:auto;}
+.pdf-page{padding:20px;max-width:800px;margin:0 auto;}
+.pdf-header{display:flex;justify-content:space-between;border-bottom:3px solid var(--pr);padding-bottom:15px;margin-bottom:20px;}
+.pdf-grid{display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;}
+.pdf-item{background:#f8fafc; padding:12px; border-radius:10px;}
+.pdf-label{font-size:10px; color:var(--txt3); text-transform:uppercase; font-weight:800;}
+.pdf-val{font-size:14px; font-weight:800;}
+
+.pdf-sign{border-radius:12px; overflow:hidden; border:1px solid var(--bd); margin-bottom:20px;}
+.pdf-s-head{background:var(--pr); color:white; padding:10px 15px; font-weight:800; display:flex; justify-content:space-between;}
+.pdf-s-body{padding:15px;}
+.pdf-measures{display:flex; gap:10px; margin-bottom:15px;}
+.pdf-m-box{flex:1; background:#f1f5f9; padding:10px; border-radius:8px; text-align:center;}
+.pdf-m-val{font-size:18px; font-weight:900; color:var(--pr);}
+
+/* BOTTOM NAV */
+.bnav{position:absolute;bottom:0;width:100%;height:70px;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:10;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--txt3);cursor:pointer;}
+.ni.on{color:var(--pr);}
+.fab{width:55px;height:55px;background:var(--pr);border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin-top:-35px;box-shadow:0 8px 15px rgba(249,115,22,0.4);border:4px solid #fff;}
+
+.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.pthumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #eee; position: relative; }
+.pthumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.toast{position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:var(--txt); color:white; padding:12px 25px; border-radius:30px; font-weight:700; transition:0.4s; z-index:10000; box-shadow:0 10px 20px rgba(0,0,0,0.2);}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
 </head>
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html lang="tr"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta name="mobile-web-app-capable" content="yes"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;meta name="apple-mobile-web-app-status-bar-style" content="default"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;title&gt;TaberaField Pro&lt;/title&gt;</span></p>
-<p class="p1"><span class="s1">&lt;link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;style&gt;</span></p>
-<p class="p1"><span class="s1">:root{</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--pr: #F97316; --pr-dark: #EA580C; --pr-bg: #FFF7ED; --pr-bd: #FFEDD5;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--bg: #F8FAFC; --card: #FFFFFF; --bd: #E2E8F0; --txt: #0F172A; --txt2: #475569;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--txt3: #94A3B8; --grn: #10B981; --blu: #3B82F6; --red: #EF4444; --cam: #0EA5E9;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>--sh: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}</span></p>
-<p class="p1"><span class="s1">body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--txt);overflow:hidden;height:100vh;}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* APP CONTAINER */</span></p>
-<p class="p1"><span class="s1">.app{width:100%;max-width:430px;height:100%;margin:0 auto;position:relative;background:var(--bg);display:flex;flex-direction:column;box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* SCREEN SYSTEM */</span></p>
-<p class="p1"><span class="s1">.scr{position:absolute;inset:0;background:var(--bg);transform:translateX(100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:1;display:flex;flex-direction:column;}</span></p>
-<p class="p1"><span class="s1">.scr.active{transform:translateX(0);z-index:2;}</span></p>
-<p class="p1"><span class="s1">.scroll{flex:1;overflow-y:auto;padding-bottom:100px;scrollbar-width:none;}</span></p>
-<p class="p1"><span class="s1">.scroll::-webkit-scrollbar{display:none;}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* TOPBAR */</span></p>
-<p class="p1"><span class="s1">.topbar{height:64px;background:#fff;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--bd);gap:15px;flex-shrink:0;}</span></p>
-<p class="p1"><span class="s1">.topbar-logo{font-size:22px;font-weight:900;letter-spacing:-0.5px;}</span></p>
-<p class="p1"><span class="s1">.topbar-logo em{color:var(--pr);font-style:normal;}</span></p>
-<p class="p1"><span class="s1">.topbar-back{width:40px;height:40px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* CARDS */</span></p>
-<p class="p1"><span class="s1">.pcard{margin:15px;background:#fff;border-radius:20px;padding:18px;border:1px solid var(--bd);box-shadow:var(--sh);cursor:pointer;position:relative;overflow:hidden;}</span></p>
-<p class="p1"><span class="s1">.pcard::after{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pr);}</span></p>
-<p class="p1"><span class="s1">.pcard.sg::after{background:var(--grn);}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* BUTTONS */</span></p>
-<p class="p1"><span class="s1">.abtn{background:linear-gradient(135deg, var(--pr), var(--pr-dark));color:#fff;border:none;padding:16px;border-radius:15px;font-weight:800;font-size:15px;width:100%;cursor:pointer;box-shadow:0 10px 15px -3px rgba(249,115,22,0.3);}</span></p>
-<p class="p1"><span class="s1">.abtn:active{transform:scale(0.98);}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* FORM ELEMENTS */</span></p>
-<p class="p1"><span class="s1">.fsec{background:#fff;padding:20px;margin-bottom:10px;border-bottom:1px solid var(--bd);}</span></p>
-<p class="p1"><span class="s1">.if{width:100%;background:var(--bg);border:2px solid var(--bd);border-radius:12px;padding:12px;font-family:inherit;font-size:15px;outline:none;margin-top:5px;}</span></p>
-<p class="p1"><span class="s1">.if:focus{border-color:var(--pr);}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* PDF &amp; PRINT STYLES */</span></p>
-<p class="p1"><span class="s1">@media print {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body, .app { background: white !important; height: auto !important; overflow: visible !important; width: 100% !important; max-width: none !important; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.bnav, .topbar, .toast, .fab-wrap, .abtn { display: none !important; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#pdf-doc { display: block !important; position: static !important; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.pdf-page { width: 100%; padding: 0; margin: 0; }</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.pdf-sign { page-break-inside: avoid; break-inside: avoid; border: 1px solid #eee; margin-bottom: 20px; }</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">#pdf-doc{display:none;position:fixed;inset:0;background:white;z-index:9999;overflow:auto;}</span></p>
-<p class="p1"><span class="s1">.pdf-page{padding:20px;max-width:800px;margin:0 auto;}</span></p>
-<p class="p1"><span class="s1">.pdf-header{display:flex;justify-content:space-between;border-bottom:3px solid var(--pr);padding-bottom:15px;margin-bottom:20px;}</span></p>
-<p class="p1"><span class="s1">.pdf-grid{display:grid;grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;}</span></p>
-<p class="p1"><span class="s1">.pdf-item{background:#f8fafc; padding:12px; border-radius:10px;}</span></p>
-<p class="p1"><span class="s1">.pdf-label{font-size:10px; color:var(--txt3); text-transform:uppercase; font-weight:800;}</span></p>
-<p class="p1"><span class="s1">.pdf-val{font-size:14px; font-weight:800;}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.pdf-sign{border-radius:12px; overflow:hidden; border:1px solid var(--bd); margin-bottom:20px;}</span></p>
-<p class="p1"><span class="s1">.pdf-s-head{background:var(--pr); color:white; padding:10px 15px; font-weight:800; display:flex; justify-content:space-between;}</span></p>
-<p class="p1"><span class="s1">.pdf-s-body{padding:15px;}</span></p>
-<p class="p1"><span class="s1">.pdf-measures{display:flex; gap:10px; margin-bottom:15px;}</span></p>
-<p class="p1"><span class="s1">.pdf-m-box{flex:1; background:#f1f5f9; padding:10px; border-radius:8px; text-align:center;}</span></p>
-<p class="p1"><span class="s1">.pdf-m-val{font-size:18px; font-weight:900; color:var(--pr);}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">/* BOTTOM NAV */</span></p>
-<p class="p1"><span class="s1">.bnav{position:absolute;bottom:0;width:100%;height:70px;background:#fff;border-top:1px solid var(--bd);display:flex;justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);z-index:10;}</span></p>
-<p class="p1"><span class="s1">.ni{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--txt3);cursor:pointer;}</span></p>
-<p class="p1"><span class="s1">.ni.on{color:var(--pr);}</span></p>
-<p class="p1"><span class="s1">.fab{width:55px;height:55px;background:var(--pr);border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin-top:-35px;box-shadow:0 8px 15px rgba(249,115,22,0.4);border:4px solid #fff;}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.pgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }</span></p>
-<p class="p1"><span class="s1">.pthumb { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #eee; position: relative; }</span></p>
-<p class="p1"><span class="s1">.pthumb img { width: 100%; height: 100%; object-fit: cover; }</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">.toast{position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:var(--txt); color:white; padding:12px 25px; border-radius:30px; font-weight:700; transition:0.4s; z-index:10000; box-shadow:0 10px 20px rgba(0,0,0,0.2);}</span></p>
-<p class="p1"><span class="s1">.toast.show{transform:translateX(-50%) translateY(0);}</span></p>
-<p class="p1"><span class="s1">&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div id="toast" class="toast"&gt;İşlem Başarılı&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div id="pdf-doc"&gt;&lt;div class="pdf-page" id="pdf-content"&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;div class="app"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr active" id="s-home"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-logo"&gt;TABERA&lt;em&gt;FIELD&lt;/em&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="flex:1"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-size:20px" onclick="location.reload()"&gt;🔄&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="proj-list"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="bnav"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="ni on" onclick="go('s-home')"&gt;🏠&lt;span style="font-size:10px"&gt;Ana Sayfa&lt;/span&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fab" onclick="go('s-new')"&gt;＋&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="ni" onclick="go('s-home')"&gt;📋&lt;span style="font-size:10px"&gt;Projeler&lt;/span&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr" id="s-new"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-back" onclick="back()"&gt;←&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:800"&gt;Yeni Ölçüm Kaydı&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fsec"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;label style="font-weight:800; font-size:12px; color:var(--pr)"&gt;MÜŞTERİ BİLGİLERİ&lt;/label&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input class="if" id="f-client" placeholder="Müşteri / Firma Adı"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;input class="if" id="f-project" placeholder="Proje / İş Adı"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="fsec"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;label style="font-weight:800; font-size:12px; color:var(--pr)"&gt;TABELALAR&lt;/label&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;button onclick="addSign()" style="background:var(--pr-bg); border:1px solid var(--pr-bd); color:var(--pr); padding:5px 12px; border-radius:8px; font-weight:800; font-size:12px"&gt;+ EKLE&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div id="signs-container"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="padding:20px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" onclick="saveProject()"&gt;💾 PROJEYİ KAYDET&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="scr" id="s-share"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="topbar"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="topbar-back" onclick="back()"&gt;←&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:800"&gt;Paylaşım Seçenekleri&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="scroll" style="padding:20px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="share-summary" style="background:#fff; padding:20px; border-radius:20px; margin-bottom:20px; border:1px solid var(--bd)"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;h3 id="sh-title" style="margin-bottom:5px"&gt;---&lt;/h3&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;p id="sh-client" style="color:var(--txt3); font-size:14px"&gt;---&lt;/p&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="display:grid; gap:15px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#25D366;" onclick="shareWhatsApp()"&gt;🟢 WhatsApp ile Gönder&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#DC2626;" onclick="printPDF()"&gt;🔴 PDF Olarak Kaydet / Yazdır&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;button class="abtn" style="background:#64748b;" onclick="copyText()"&gt;⚪ Metni Kopyala&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;script&gt;</span></p>
-<p class="p1"><span class="s1">let projects = JSON.parse(localStorage.getItem('tf_pro_data') || '[]');</span></p>
-<p class="p1"><span class="s1">let currentProjectIdx = null;</span></p>
-<p class="p1"><span class="s1">let signCount = 0;</span></p>
-<p class="p1"><span class="s1">let signPhotos = {};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function go(id) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelectorAll('.scr').forEach(s =&gt; s.classList.remove('active'));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById(id).classList.add('active');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function back() { go('s-home'); }</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function toast(m) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const t = document.getElementById('toast');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>t.textContent = m;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>t.classList.add('show');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; t.classList.remove('show'), 2000);</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function addSign() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>signCount++;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const id = `sign-${signCount}`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>signPhotos[id] = [];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const div = document.createElement('div');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.className = 'fsec';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.border = '1px solid #eee';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.borderRadius = '15px';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.padding = '15px';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.style.marginBottom = '15px';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>div.innerHTML = `</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="display:flex; justify-content:space-between; margin-bottom:10px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span style="font-weight:900; color:var(--pr)"&gt;#${signCount}&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;span onclick="this.parentElement.parentElement.remove()" style="color:var(--red); font-weight:800; cursor:pointer"&gt;SİL&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;input class="if" id="${id}-label" placeholder="Tabela Tanımı (Örn: Giriş Kapısı)"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;select class="if" id="${id}-type"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;option&gt;Kutu Harf&lt;/option&gt;&lt;option&gt;Işıklı Tabela&lt;/option&gt;&lt;option&gt;Vinil Germe&lt;/option&gt;&lt;option&gt;Cam Folyo&lt;/option&gt;&lt;option&gt;Diğer&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/select&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="display:flex; gap:10px; margin-top:10px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input class="if" id="${id}-w" type="number" placeholder="En (m)"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input class="if" id="${id}-h" type="number" placeholder="Boy (m)"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div style="margin-top:10px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;input type="file" accept="image/*" multiple onchange="handlePhotos('${id}', this)" style="font-size:12px"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div id="${id}-prev" class="pgrid"&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('signs-container').appendChild(div);</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function handlePhotos(sid, input) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Array.from(input.files).forEach(file =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const reader = new FileReader();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>reader.onload = e =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>signPhotos[sid].push(e.target.result);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>renderPrev(sid);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>};</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>reader.readAsDataURL(file);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function renderPrev(sid) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cont = document.getElementById(`${sid}-prev`);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cont.innerHTML = signPhotos[sid].map(src =&gt; `&lt;div class="pthumb"&gt;&lt;img src="${src}"&gt;&lt;/div&gt;`).join('');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function saveProject() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const client = document.getElementById('f-client').value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const project = document.getElementById('f-project').value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(!client) return toast("Müşteri adı boş olamaz!");</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const signs = [];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelectorAll('#signs-container &gt; div').forEach((div, idx) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const id = `sign-${idx + 1}`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>signs.push({</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>label: document.getElementById(`${id}-label`)?.value || 'İsimsiz',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>type: document.getElementById(`${id}-type`)?.value,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>w: document.getElementById(`${id}-w`)?.value,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>h: document.getElementById(`${id}-h`)?.value,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>photos: signPhotos[id] || []</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>projects.push({ client, project, signs, date: new Date().toLocaleString('tr-TR') });</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>localStorage.setItem('tf_pro_data', JSON.stringify(projects));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast("Proje Başarıyla Kaydedildi!");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>renderHome();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>go('s-home');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function renderHome() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const list = document.getElementById('proj-list');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>if(projects.length === 0) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>list.innerHTML = `&lt;div style="text-align:center; padding:50px; color:#94a3b8"&gt;Henüz proje eklenmemiş.&lt;/div&gt;`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>list.innerHTML = projects.map((p, i) =&gt; `</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pcard" onclick="openShare(${i})"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="font-weight:900; font-size:16px"&gt;${p.project || 'İsimsiz Proje'}&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="color:var(--txt2); font-size:13px"&gt;${p.client}&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span style="font-size:11px; background:var(--pr-bg); color:var(--pr); padding:4px 8px; border-radius:6px; font-weight:800"&gt;${p.signs.length} Tabela&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;span style="font-size:10px; color:var(--txt3)"&gt;${p.date}&lt;/span&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`).reverse().join('');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function openShare(i) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>currentProjectIdx = i;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[i];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('sh-title').textContent = p.project || 'İsimsiz Proje';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('sh-client').textContent = p.client;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>go('s-share');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function buildText() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[currentProjectIdx];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let text = `*🏗️ TABERA FIELD PROJE RAPORU*\n\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Müşteri:* ${p.client}\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Proje:* ${p.project}\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `*Tarih:* ${p.date}\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `\n---------------------------\n`;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>p.signs.forEach((s, idx) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `\n*${idx+1}. ${s.label}*\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `Type: ${s.type}\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>text += `Ölçü: ${s.w || '?'}m x ${s.h || '?'}m\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if(s.w &amp;&amp; s.h) text += `Alan: ${(s.w * s.h).toFixed(2)} m2\n`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>text += `\n_TaberaField Mobile tarafından oluşturuldu._`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>return text;</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function shareWhatsApp() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const txt = encodeURIComponent(buildText());</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>window.open(`https://wa.me/?text=${txt}`, '_blank');</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function copyText() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>navigator.clipboard.writeText(buildText());</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>toast("Metin kopyalandı!");</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">function printPDF() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const p = projects[currentProjectIdx];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let html = `</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pdf-header"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div&gt;&lt;h1 style="color:var(--pr)"&gt;TABERA FIELD&lt;/h1&gt;&lt;p&gt;Saha Ölçüm &amp; Teknik Rapor&lt;/p&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div style="text-align:right"&gt;&lt;strong&gt;Tarih:&lt;/strong&gt;&lt;br&gt;${p.date}&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="pdf-grid"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-item"&gt;&lt;div class="pdf-label"&gt;Müşteri / Firma&lt;/div&gt;&lt;div class="pdf-val"&gt;${p.client}&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-item"&gt;&lt;div class="pdf-label"&gt;Proje Adı&lt;/div&gt;&lt;div class="pdf-val"&gt;${p.project}&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>`;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>p.signs.forEach((s, idx) =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const area = (s.w * s.h).toFixed(2);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>html += `</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="pdf-sign"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="pdf-s-head"&gt;&lt;span&gt;${idx+1}. ${s.label}&lt;/span&gt;&lt;span&gt;${s.type}&lt;/span&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="pdf-s-body"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="pdf-measures"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val"&gt;${s.w || '-'}&lt;/div&gt;&lt;div class="pdf-label"&gt;GENİŞLİK (M)&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val"&gt;${s.h || '-'}&lt;/div&gt;&lt;div class="pdf-label"&gt;YÜKSEKLİK (M)&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="pdf-m-box"&gt;&lt;div class="pdf-m-val" style="color:var(--txt)"&gt;${area}&lt;/div&gt;&lt;div class="pdf-label"&gt;ALAN (M2)&lt;/div&gt;&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="pgrid"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>${s.photos.map(src =&gt; `&lt;div class="pthumb"&gt;&lt;img src="${src}"&gt;&lt;/div&gt;`).join('')}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>`;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.getElementById('pdf-content').innerHTML = html;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const doc = document.getElementById('pdf-doc');</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>doc.style.display = 'block';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>setTimeout(() =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>window.print();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>doc.style.display = 'none';</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}, 500);</span></p>
-<p class="p1"><span class="s1">}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">renderHome();</span></p>
-<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+
+<div id="toast" class="toast">İşlem Başarılı</div>
+
+<div id="pdf-doc"><div class="pdf-page" id="pdf-content"></div></div>
+
+<div class="app">
+    <div class="scr active" id="s-home">
+        <div class="topbar">
+            <div class="topbar-logo">TABERA<em>FIELD</em></div>
+            <div style="flex:1"></div>
+            <div style="font-size:20px" onclick="location.reload()">🔄</div>
+        </div>
+        <div class="scroll">
+            <div id="proj-list"></div>
+        </div>
+        <div class="bnav">
+            <div class="ni on" onclick="go('s-home')">🏠<span style="font-size:10px">Ana Sayfa</span></div>
+            <div class="fab" onclick="go('s-new')">＋</div>
+            <div class="ni" onclick="go('s-home')">📋<span style="font-size:10px">Projeler</span></div>
+        </div>
+    </div>
+
+    <div class="scr" id="s-new">
+        <div class="topbar">
+            <div class="topbar-back" onclick="back()">←</div>
+            <div style="font-weight:800">Yeni Ölçüm Kaydı</div>
+        </div>
+        <div class="scroll">
+            <div class="fsec">
+                <label style="font-weight:800; font-size:12px; color:var(--pr)">MÜŞTERİ BİLGİLERİ</label>
+                <input class="if" id="f-client" placeholder="Müşteri / Firma Adı">
+                <input class="if" id="f-project" placeholder="Proje / İş Adı">
+            </div>
+            <div class="fsec">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                    <label style="font-weight:800; font-size:12px; color:var(--pr)">TABELALAR</label>
+                    <button onclick="addSign()" style="background:var(--pr-bg); border:1px solid var(--pr-bd); color:var(--pr); padding:5px 12px; border-radius:8px; font-weight:800; font-size:12px">+ EKLE</button>
+                </div>
+                <div id="signs-container"></div>
+            </div>
+            <div style="padding:20px">
+                <button class="abtn" onclick="saveProject()">💾 PROJEYİ KAYDET</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="scr" id="s-share">
+        <div class="topbar">
+            <div class="topbar-back" onclick="back()">←</div>
+            <div style="font-weight:800">Paylaşım Seçenekleri</div>
+        </div>
+        <div class="scroll" style="padding:20px">
+            <div id="share-summary" style="background:#fff; padding:20px; border-radius:20px; margin-bottom:20px; border:1px solid var(--bd)">
+                <h3 id="sh-title" style="margin-bottom:5px">---</h3>
+                <p id="sh-client" style="color:var(--txt3); font-size:14px">---</p>
+            </div>
+            
+            <div style="display:grid; gap:15px">
+                <button class="abtn" style="background:#25D366;" onclick="shareWhatsApp()">🟢 WhatsApp ile Gönder</button>
+                <button class="abtn" style="background:#DC2626;" onclick="printPDF()">🔴 PDF Olarak Kaydet / Yazdır</button>
+                <button class="abtn" style="background:#64748b;" onclick="copyText()">⚪ Metni Kopyala</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let projects = JSON.parse(localStorage.getItem('tf_pro_data') || '[]');
+let currentProjectIdx = null;
+let signCount = 0;
+let signPhotos = {};
+
+function go(id) {
+    document.querySelectorAll('.scr').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function back() { go('s-home'); }
+
+function toast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function addSign() {
+    signCount++;
+    const id = `sign-${signCount}`;
+    signPhotos[id] = [];
+    const div = document.createElement('div');
+    div.className = 'fsec';
+    div.style.border = '1px solid #eee';
+    div.style.borderRadius = '15px';
+    div.style.padding = '15px';
+    div.style.marginBottom = '15px';
+    div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+            <span style="font-weight:900; color:var(--pr)">#${signCount}</span>
+            <span onclick="this.parentElement.parentElement.remove()" style="color:var(--red); font-weight:800; cursor:pointer">SİL</span>
+        </div>
+        <input class="if" id="${id}-label" placeholder="Tabela Tanımı (Örn: Giriş Kapısı)">
+        <select class="if" id="${id}-type">
+            <option>Kutu Harf</option><option>Işıklı Tabela</option><option>Vinil Germe</option><option>Cam Folyo</option><option>Diğer</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:10px">
+            <input class="if" id="${id}-w" type="number" placeholder="En (m)">
+            <input class="if" id="${id}-h" type="number" placeholder="Boy (m)">
+        </div>
+        <div style="margin-top:10px">
+            <input type="file" accept="image/*" multiple onchange="handlePhotos('${id}', this)" style="font-size:12px">
+            <div id="${id}-prev" class="pgrid"></div>
+        </div>
+    `;
+    document.getElementById('signs-container').appendChild(div);
+}
+
+function handlePhotos(sid, input) {
+    Array.from(input.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            signPhotos[sid].push(e.target.result);
+            renderPrev(sid);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderPrev(sid) {
+    const cont = document.getElementById(`${sid}-prev`);
+    cont.innerHTML = signPhotos[sid].map(src => `<div class="pthumb"><img src="${src}"></div>`).join('');
+}
+
+function saveProject() {
+    const client = document.getElementById('f-client').value;
+    const project = document.getElementById('f-project').value;
+    if(!client) return toast("Müşteri adı boş olamaz!");
+
+    const signs = [];
+    document.querySelectorAll('#signs-container > div').forEach((div, idx) => {
+        const id = `sign-${idx + 1}`;
+        signs.push({
+            label: document.getElementById(`${id}-label`)?.value || 'İsimsiz',
+            type: document.getElementById(`${id}-type`)?.value,
+            w: document.getElementById(`${id}-w`)?.value,
+            h: document.getElementById(`${id}-h`)?.value,
+            photos: signPhotos[id] || []
+        });
+    });
+
+    projects.push({ client, project, signs, date: new Date().toLocaleString('tr-TR') });
+    localStorage.setItem('tf_pro_data', JSON.stringify(projects));
+    toast("Proje Başarıyla Kaydedildi!");
+    renderHome();
+    go('s-home');
+}
+
+function renderHome() {
+    const list = document.getElementById('proj-list');
+    if(projects.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding:50px; color:#94a3b8">Henüz proje eklenmemiş.</div>`;
+        return;
+    }
+    list.innerHTML = projects.map((p, i) => `
+        <div class="pcard" onclick="openShare(${i})">
+            <div style="font-weight:900; font-size:16px">${p.project || 'İsimsiz Proje'}</div>
+            <div style="color:var(--txt2); font-size:13px">${p.client}</div>
+            <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center">
+                <span style="font-size:11px; background:var(--pr-bg); color:var(--pr); padding:4px 8px; border-radius:6px; font-weight:800">${p.signs.length} Tabela</span>
+                <span style="font-size:10px; color:var(--txt3)">${p.date}</span>
+            </div>
+        </div>
+    `).reverse().join('');
+}
+
+function openShare(i) {
+    currentProjectIdx = i;
+    const p = projects[i];
+    document.getElementById('sh-title').textContent = p.project || 'İsimsiz Proje';
+    document.getElementById('sh-client').textContent = p.client;
+    go('s-share');
+}
+
+function buildText() {
+    const p = projects[currentProjectIdx];
+    let text = `*🏗️ TABERA FIELD PROJE RAPORU*\n\n`;
+    text += `*Müşteri:* ${p.client}\n`;
+    text += `*Proje:* ${p.project}\n`;
+    text += `*Tarih:* ${p.date}\n`;
+    text += `\n---------------------------\n`;
+    
+    p.signs.forEach((s, idx) => {
+        text += `\n*${idx+1}. ${s.label}*\n`;
+        text += `Type: ${s.type}\n`;
+        text += `Ölçü: ${s.w || '?'}m x ${s.h || '?'}m\n`;
+        if(s.w && s.h) text += `Alan: ${(s.w * s.h).toFixed(2)} m2\n`;
+    });
+    
+    text += `\n_TaberaField Mobile tarafından oluşturuldu._`;
+    return text;
+}
+
+function shareWhatsApp() {
+    const txt = encodeURIComponent(buildText());
+    window.open(`https://wa.me/?text=${txt}`, '_blank');
+}
+
+function copyText() {
+    navigator.clipboard.writeText(buildText());
+    toast("Metin kopyalandı!");
+}
+
+function printPDF() {
+    const p = projects[currentProjectIdx];
+    let html = `
+        <div class="pdf-header">
+            <div><h1 style="color:var(--pr)">TABERA FIELD</h1><p>Saha Ölçüm & Teknik Rapor</p></div>
+            <div style="text-align:right"><strong>Tarih:</strong><br>${p.date}</div>
+        </div>
+        <div class="pdf-grid">
+            <div class="pdf-item"><div class="pdf-label">Müşteri / Firma</div><div class="pdf-val">${p.client}</div></div>
+            <div class="pdf-item"><div class="pdf-label">Proje Adı</div><div class="pdf-val">${p.project}</div></div>
+        </div>
+    `;
+
+    p.signs.forEach((s, idx) => {
+        const area = (s.w * s.h).toFixed(2);
+        html += `
+            <div class="pdf-sign">
+                <div class="pdf-s-head"><span>${idx+1}. ${s.label}</span><span>${s.type}</span></div>
+                <div class="pdf-s-body">
+                    <div class="pdf-measures">
+                        <div class="pdf-m-box"><div class="pdf-m-val">${s.w || '-'}</div><div class="pdf-label">GENİŞLİK (M)</div></div>
+                        <div class="pdf-m-box"><div class="pdf-m-val">${s.h || '-'}</div><div class="pdf-label">YÜKSEKLİK (M)</div></div>
+                        <div class="pdf-m-box"><div class="pdf-m-val" style="color:var(--txt)">${area}</div><div class="pdf-label">ALAN (M2)</div></div>
+                    </div>
+                    <div class="pgrid">
+                        ${s.photos.map(src => `<div class="pthumb"><img src="${src}"></div>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById('pdf-content').innerHTML = html;
+    const doc = document.getElementById('pdf-doc');
+    doc.style.display = 'block';
+    setTimeout(() => {
+        window.print();
+        doc.style.display = 'none';
+    }, 500);
+}
+
+renderHome();
+</script>
 </body>
 </html>
