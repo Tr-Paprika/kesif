@@ -939,9 +939,9 @@ function addSign(){
       <div id="${id}-single-dims" class="ig">
         <div class="il">Tabela Ölçüleri</div>
         <div class="drow">
-          <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-w" type="number" inputmode="decimal" placeholder="0" step="1"></div>
-          <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-h" type="number" inputmode="decimal" placeholder="0" step="1"></div>
-          <div class="ig"><div class="il">Adet</div><input class="if" id="${id}-d" type="number" inputmode="numeric" placeholder="1" step="1"></div>
+          <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-w" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
+          <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-h" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
+          <div class="ig"><div class="il">Adet</div><input class="if" id="${id}-d" type="number" inputmode="numeric" placeholder="1" step="any" min="0"></div>
         </div>
       </div>
 
@@ -958,8 +958,8 @@ function addSign(){
         <div class="ig">
           <div class="il" style="color:var(--cam)">Cam Yüzey Ölçüsü</div>
           <div class="drow">
-            <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-cw" type="number" inputmode="decimal" placeholder="0" step="1"></div>
-            <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-ch" type="number" inputmode="decimal" placeholder="0" step="1"></div>
+            <div class="ig"><div class="il">Genişlik (cm)</div><input class="if" id="${id}-cw" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
+            <div class="ig"><div class="il">Yükseklik (cm)</div><input class="if" id="${id}-ch" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
           </div>
         </div>
         <div class="ig">
@@ -1036,9 +1036,9 @@ function addMRow(sid){
     <div class="mrow-num">${ri}</div>
     ${ri>1?`<div class="mrow-del" onclick="removeMRow('${sid}',${ri})">✕</div>`:''}
     <div class="mrow-fields" style="padding-left:26px;">
-      <div><div class="il">Genişlik (cm)</div><input class="if" id="${sid}-mrow-${ri}-w" type="number" inputmode="decimal" placeholder="0" step="1"></div>
-      <div><div class="il">Yükseklik (cm)</div><input class="if" id="${sid}-mrow-${ri}-h" type="number" inputmode="decimal" placeholder="0" step="1"></div>
-      <div><div class="il">Adet</div><input class="if" id="${sid}-mrow-${ri}-d" type="number" inputmode="numeric" placeholder="1" step="1"></div>
+      <div><div class="il">Genişlik (cm)</div><input class="if" id="${sid}-mrow-${ri}-w" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
+      <div><div class="il">Yükseklik (cm)</div><input class="if" id="${sid}-mrow-${ri}-h" type="number" inputmode="decimal" placeholder="0" step="any" min="0"></div>
+      <div><div class="il">Adet</div><input class="if" id="${sid}-mrow-${ri}-d" type="number" inputmode="numeric" placeholder="1" step="any" min="0"></div>
     </div>
     <div class="mrow-note">
       <div class="il">Not / Açıklama</div>
@@ -1088,11 +1088,28 @@ function selStatus(el){
 /* ─── PHOTOS ─── */
 function addPhotos(sid,inp){
   Array.from(inp.files).forEach(file=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      signPhotos[sid]=signPhotos[sid]||[];
-      signPhotos[sid].push({dataUrl:e.target.result,note:''});
-      renderPhotos(sid);
+    const r = new FileReader();
+    r.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1024;
+        const MAX_HEIGHT = 1024;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        signPhotos[sid] = signPhotos[sid] || [];
+        signPhotos[sid].push({dataUrl: canvas.toDataURL('image/jpeg', 0.6), note: ''});
+        renderPhotos(sid);
+      };
+      img.src = e.target.result;
     };
     r.readAsDataURL(file);
   });
@@ -1147,9 +1164,13 @@ function saveProject(){
   const now=new Date();
   const dateStr=now.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   projects.push({client,project,measurer,address:document.getElementById('f-address').value.trim(),note:document.getElementById('f-note').value.trim(),status,signs,gps:gpsText,gpsDistrict,gpsCoords,date:dateStr});
-  try{localStorage.setItem('tf_projects',JSON.stringify(projects));}catch(e){toast('Depolama hatası','err');}
-  toast('Proje kaydedildi ✓');
-  setTimeout(()=>{back();renderHome();},350);
+  try {
+    localStorage.setItem('tf_projects', JSON.stringify(projects));
+    toast('Proje kaydedildi ✓');
+    setTimeout(()=>{back();renderHome();},350);
+  } catch(e) {
+    toast('Depolama hatası: Hafıza dolu veya fotoğraflar çok büyük', 'err');
+  }
 }
 
 /* ─── DETAIL ─── */
