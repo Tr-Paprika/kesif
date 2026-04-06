@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Paprika Reklamcılık Keşif - Düzeltilmiş</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Paprika Reklamcılık Keşif</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --pr:#C0392B; --pr2:#E74C3C; --pr-bg:#FDF2F2; --pr-bd:#F5B7B1;
@@ -17,7 +17,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);font-family:'Nunito',sans-serif;height:100vh;overflow:hidden;}
 
-/* KRİTİK DÜZELTME: Ekranların üst üste binmesini engelleyen yapı */
+/* --- KRİTİK EKRAN DÜZELTMESİ --- */
 .scr {
   position:absolute; inset:0; display:flex; flex-direction:column; 
   background:var(--bg); transform:translateX(105%); 
@@ -28,153 +28,222 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;height:100vh;overflow:
   transform:translateX(0); z-index:10; visibility:visible;
 }
 .scr.behind {
-  transform:translateX(-15%); z-index:0; visibility:hidden;
+  transform:translateX(-10%); z-index:0; visibility:hidden;
 }
+/* ------------------------------ */
 
-.scroll{flex:1; overflow-y:auto; padding-bottom:100px;}
-.topbar{background:var(--card); border-bottom:1px solid var(--bd); height:60px; display:flex; align-items:center; padding:0 16px; gap:10px;}
-.topbar-title{font-size:17px; font-weight:800; flex:1;}
-.topbar-back{width:36px; height:36px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+.scroll{flex:1; overflow-y:auto; padding-bottom:100px; -webkit-overflow-scrolling:touch;}
+.topbar{background:var(--card); border-bottom:1px solid var(--bd); height:56px; display:flex; align-items:center; padding:0 16px; flex-shrink:0;}
+.topbar-logo{font-size:20px; font-weight:900; color:var(--txt); letter-spacing:-.3px;}
+.topbar-logo em{color:var(--pr); font-style:normal;}
+.topbar-back{width:36px; height:36px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; cursor:pointer; margin-right:10px;}
 
-.pcard, .scard {
-  background:var(--card); margin:10px 15px; padding:15px; border-radius:var(--r); 
-  border:1px solid var(--bd); box-shadow:var(--sh); position:relative;
-}
-.edit-btn {
-  background:var(--pr-bg); color:var(--pr); padding:5px 12px; border-radius:8px; 
-  font-size:12px; font-weight:800; float:right; border:1px solid var(--pr-bd);
-}
+.stats{display:flex; gap:10px; padding:14px 16px;}
+.sc{flex:1; background:var(--card); border-radius:var(--r); padding:12px; border:1px solid var(--bd); box-shadow:var(--sh);}
+.sn{font-size:24px; font-weight:900; color:var(--txt);}
+.sl{font-size:10px; color:var(--txt3); font-weight:700; margin-top:4px;}
+
+.pcard{margin:0 14px 10px; background:var(--card); border-radius:var(--r); padding:14px; border:1px solid var(--bd); box-shadow:var(--sh); position:relative; overflow:hidden;}
+.pcard::before{content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--pr);}
+.pn{font-size:14px; font-weight:800; color:var(--txt);}
+.pc{font-size:11px; color:var(--txt3); margin-top:2px;}
 
 .fsec{background:var(--card); padding:16px; margin-bottom:10px;}
-.if{width:100%; padding:12px; border-radius:var(--r3); border:1px solid var(--bd2); margin-top:5px; font-family:inherit;}
-.abtn{width:100%; padding:15px; background:var(--pr); color:#fff; border:none; border-radius:var(--r2); font-weight:800; margin-top:10px;}
+.fst{font-size:12px; font-weight:800; color:var(--pr); text-transform:uppercase; margin-bottom:12px;}
+.il{font-size:11px; color:var(--txt3); font-weight:800; margin-bottom:5px;}
+.if{width:100%; background:var(--card2); border:1.5px solid var(--bd2); border-radius:var(--r3); padding:11px; font-family:inherit; outline:none;}
+.if:focus{border-color:var(--pr);}
 
-.bnav{position:fixed; bottom:0; width:100%; height:70px; background:var(--card); display:flex; border-top:1px solid var(--bd); z-index:100;}
-.ni{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--txt4);}
-.ni.on{color:var(--pr);}
-.pgrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;}
-.pthumb{aspect-ratio:1; background:#ddd; border-radius:8px; overflow:hidden;}
+.pzone{border:2px dashed var(--bd2); border-radius:var(--r2); padding:20px; text-align:center; background:var(--card2); cursor:pointer;}
+.pgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px;}
+.pthumb{aspect-ratio:1; border-radius:var(--r3); background:var(--bd); position:relative; overflow:hidden;}
 .pthumb img{width:100%; height:100%; object-fit:cover;}
+.pthumb-del{position:absolute; top:4px; right:4px; background:var(--red,#D92D20); color:#fff; width:20px; height:20px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:900;}
+
+.abtn{width:100%; padding:14px; background:linear-gradient(145deg,var(--pr),var(--pr2)); color:#fff; border:none; border-radius:var(--r2); font-weight:800; font-family:inherit; box-shadow:0 4px 12px rgba(192,57,43,.3);}
+
+.bnav{position:fixed; bottom:0; width:100%; height:70px; background:var(--card); border-top:1px solid var(--bd); display:flex; align-items:center; z-index:100; padding-bottom:env(safe-area-inset-bottom);}
+.ni{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--txt4); font-size:11px; font-weight:700;}
+.ni.on{color:var(--pr);}
+.fab{width:50px; height:50px; background:var(--pr); border-radius:15px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; margin-top:-20px; box-shadow:0 4px 12px rgba(192,57,43,0.4);}
+
+.scard{background:var(--card); margin:10px 14px; padding:12px; border-radius:var(--r); border:1px solid var(--bd); display:flex; align-items:center; gap:12px;}
+.edit-badge{margin-left:auto; background:var(--pr-bg); color:var(--pr); font-size:11px; font-weight:800; padding:5px 10px; border-radius:8px; border:1px solid var(--pr-bd);}
 </style>
 </head>
 <body>
 
 <div class="app">
   <div class="scr active" id="s-home">
-    <div class="topbar"><div class="topbar-title">Paprika <b>Keşif</b></div></div>
-    <div class="scroll" id="home-list"></div>
+    <div class="topbar">
+        <div class="topbar-logo">PAPRİKA<em>KEŞİF</em></div>
+        <div style="flex:1"></div>
+        <div style="font-size:11px; font-weight:800; color:var(--pr)" onclick="go('s-new')">+ YENİ</div>
+    </div>
+    <div class="scroll">
+        <div class="stats">
+            <div class="sc"><div class="sn" id="st-total">0</div><div class="sl">Toplam</div></div>
+            <div class="sc"><div class="sn" id="st-wait">0</div><div class="sl">Devam</div></div>
+            <div class="sc"><div class="sn" id="st-done">0</div><div class="sl">Bitti</div></div>
+        </div>
+        <div id="home-list"></div>
+    </div>
     <div class="bnav">
-      <div class="ni on" onclick="go('s-home')">🏠 Ana Sayfa</div>
-      <div class="ni" onclick="go('s-share')">📤 Paylaş</div>
+      <div class="ni on" onclick="go('s-home')">🏠<div>Ana Sayfa</div></div>
+      <div onclick="go('s-new')"><div class="fab">+</div></div>
+      <div class="ni" onclick="go('s-share')">📤<div>Paylaş</div></div>
     </div>
   </div>
 
   <div class="scr" id="s-share">
     <div class="topbar">
         <div class="topbar-back" onclick="go('s-home')">←</div>
-        <div class="topbar-title">Projeleri Paylaş</div>
+        <div style="font-weight:800">Projeleri Paylaş</div>
     </div>
     <div class="scroll" id="share-list"></div>
   </div>
 
-  <div class="scr" id="s-edit">
+  <div class="scr" id="s-new">
     <div class="topbar">
-        <div class="topbar-back" onclick="back()">←</div>
-        <div class="topbar-title" id="edit-title">Projeyi Düzenle</div>
+        <div class="topbar-back" onclick="go('s-home')">←</div>
+        <div id="edit-title" style="font-weight:800">Yeni Proje</div>
     </div>
     <div class="scroll">
         <div class="fsec">
-            <label>Müşteri Adı</label>
-            <input type="text" id="f-client" class="if">
-            <br><br>
-            <label>Proje Adı</label>
-            <input type="text" id="f-project" class="if">
+            <div class="il">Müşteri Adı</div>
+            <input type="text" id="f-client" class="if" placeholder="Müşteri...">
+            <div class="il" style="margin-top:12px">Proje Adı</div>
+            <input type="text" id="f-project" class="if" placeholder="İşin adı...">
         </div>
         <div class="fsec">
-            <div id="pgrid" class="pgrid"></div>
+            <div class="fst">📸 Fotoğraflar</div>
+            <div class="pzone" onclick="document.getElementById('f-img').click()">
+                <b>Fotoğraf Çek / Yükle</b>
+                <input type="file" id="f-img" multiple accept="image/*" style="display:none" onchange="handleImgs(this)">
+            </div>
+            <div class="pgrid" id="pgrid"></div>
         </div>
-        <div style="padding:15px">
-            <button class="abtn" onclick="save()">DEĞİŞİKLİKLERİ KAYDET</button>
-        </div>
+        <div style="padding:16px"><button class="abtn" onclick="save()">KAYDET</button></div>
     </div>
   </div>
 </div>
 
 <script>
-let projects = JSON.parse(localStorage.getItem('paprika_data') || '[]');
-let currentId = null;
+let projects = JSON.parse(localStorage.getItem('paprika_projs') || '[]');
+let currentImgs = [];
+let editingId = null;
 
-// GÜÇLENDİRİLMİŞ GEÇİŞ FONKSİYONU
+// GÜÇLENDİRİLMİŞ GEÇİŞ SİSTEMİ
 function go(id) {
     const screens = document.querySelectorAll('.scr');
-    const target = document.getElementById(id);
+    const activeNow = document.querySelector('.scr.active');
     
+    if(activeNow) {
+        activeNow.classList.remove('active');
+        activeNow.classList.add('behind');
+    }
+
     screens.forEach(s => {
-        s.classList.remove('active');
-        s.classList.remove('behind');
-        // Ekran aktif değilse tamamen gizle ki arkadan sızmasın
         if(s.id !== id) {
-            s.style.visibility = 'hidden';
+            s.classList.remove('active');
+            s.style.visibility = 'hidden'; // Arka plan sızıntısını keser
         }
     });
 
+    const target = document.getElementById(id);
     target.style.visibility = 'visible';
+    target.classList.remove('behind');
     target.classList.add('active');
-    
-    if(id === 's-home') renderHome();
-    if(id === 's-share') renderShare();
+
+    // Menü aktiflik durumları
+    document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+    if(id === 's-home') { renderHome(); document.querySelectorAll('.ni')[0].classList.add('on'); }
+    if(id === 's-share') { renderShare(); document.querySelectorAll('.ni')[1].classList.add('on'); }
+    if(id === 's-new' && !editingId) resetForm();
+}
+
+function handleImgs(input) {
+    const files = Array.from(input.files);
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => { currentImgs.push(e.target.result); renderImgs(); };
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderImgs() {
+    const grid = document.getElementById('pgrid');
+    grid.innerHTML = currentImgs.map((img, i) => `
+        <div class="pthumb">
+            <img src="${img}">
+            <div class="pthumb-del" onclick="removeImg(${i})">✕</div>
+        </div>
+    `).join('');
+}
+
+function removeImg(i) { currentImgs.splice(i, 1); renderImgs(); }
+
+function save() {
+    const client = document.getElementById('f-client').value;
+    const project = document.getElementById('f-project').value;
+    if(!client || !project) return alert("Boş bırakmayın");
+
+    const data = { id: editingId || Date.now(), client, project, imgs: currentImgs, date: new Date().toLocaleDateString('tr-TR') };
+
+    if(editingId) projects = projects.map(p => p.id === editingId ? data : p);
+    else projects.unshift(data);
+
+    localStorage.setItem('paprika_projs', JSON.stringify(projects));
+    editingId = null;
+    go('s-home');
+}
+
+function openEdit(id) {
+    const p = projects.find(x => x.id == id);
+    if(!p) return;
+    editingId = id;
+    document.getElementById('edit-title').innerText = "Projeyi Düzenle";
+    document.getElementById('f-client').value = p.client;
+    document.getElementById('f-project').value = p.project;
+    currentImgs = [...(p.imgs || [])];
+    renderImgs();
+    go('s-new');
+}
+
+function resetForm() {
+    editingId = null;
+    document.getElementById('edit-title').innerText = "Yeni Proje";
+    document.getElementById('f-client').value = '';
+    document.getElementById('f-project').value = '';
+    currentImgs = [];
+    renderImgs();
 }
 
 function renderHome() {
     const cont = document.getElementById('home-list');
     cont.innerHTML = projects.map(p => `
         <div class="pcard" onclick="openEdit(${p.id})">
-            <b>${p.project}</b><br><small>${p.client}</small>
+            <div class="pn">${p.project}</div>
+            <div class="pc">${p.client}</div>
         </div>
     `).join('');
+    document.getElementById('st-total').innerText = projects.length;
 }
 
 function renderShare() {
     const cont = document.getElementById('share-list');
     cont.innerHTML = projects.map(p => `
         <div class="scard">
-            <div class="edit-btn" onclick="openEdit(${p.id})">DÜZENLE</div>
-            <b>${p.project}</b><br><small>${p.client}</small>
+            <div>
+                <div style="font-weight:800; font-size:14px">${p.project}</div>
+                <div style="font-size:11px; color:var(--txt3)">${p.client}</div>
+            </div>
+            <div class="edit-badge" onclick="openEdit(${p.id})">✏️ DÜZENLE</div>
         </div>
     `).join('');
 }
 
-function openEdit(id) {
-    const p = projects.find(x => x.id == id);
-    if(!p) return;
-    currentId = id;
-    document.getElementById('f-client').value = p.client;
-    document.getElementById('f-project').value = p.project;
-    
-    // Fotoğrafları yükle
-    const grid = document.getElementById('pgrid');
-    grid.innerHTML = (p.imgs || []).map(img => `<div class="pthumb"><img src="${img}"></div>`).join('');
-    
-    go('s-edit'); // Düzenleme ekranına geç
-}
-
-function save() {
-    const client = document.getElementById('f-client').value;
-    const project = document.getElementById('f-project').value;
-    
-    projects = projects.map(p => p.id == currentId ? {...p, client, project} : p);
-    localStorage.setItem('paprika_data', JSON.stringify(projects));
-    alert("Güncellendi!");
-    go('s-home');
-}
-
-function back() {
-    go('s-home');
-}
-
-// İlk açılış
 renderHome();
 </script>
-
 </body>
 </html>
