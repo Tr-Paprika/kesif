@@ -478,14 +478,29 @@ function back(){
   if(screenStack.length<2)return;
   const cur=screenStack.pop();
   const prev=screenStack[screenStack.length-1];
-  document.getElementById(cur).classList.remove('active');
-  document.getElementById(prev).classList.remove('behind');
+  document.getElementById(cur).classList.remove('active','behind');
+  const prevEl=document.getElementById(prev);
+  prevEl.classList.remove('behind');
+  prevEl.classList.add('active');
+  // Eğer düzenleme ekranından çıkıyorsak editingProject'i sıfırla
+  if(cur==='s-new'&&editingProject!==null){
+    editingProject=null;
+  }
   onScreen(prev);
 }
 function onScreen(id){
   if(id==='s-home')renderHome();
   if(id==='s-new'&&editingProject===null)initNew();
   if(id==='s-share-list')renderShareList();
+}
+
+/* Tüm ekranları sıfırla, sadece isteneni göster */
+function showOnly(id){
+  document.querySelectorAll('.scr').forEach(s=>{
+    s.classList.remove('active','behind');
+  });
+  document.getElementById(id).classList.add('active');
+  screenStack=[id];
 }
 
 /* ═══════════════════════════════════════════
@@ -569,6 +584,7 @@ function startEdit(){
   editingProject=currentProject;
   document.getElementById('new-screen-title').textContent='Projeyi Düzenle';
   document.getElementById('save-btn').textContent='💾 Değişiklikleri Kaydet';
+  // Tüm ekranları kapat, sadece düzenleme ekranını aç — yarı görünüm sorunu çözülür
 
   // Mevcut verileri forma doldur
   document.getElementById('f-client').value=p.client||'';
@@ -639,12 +655,17 @@ function startEdit(){
     // Not
     const noteEl=document.getElementById(id+'-note'); if(noteEl) noteEl.value=s.note||'';
     // Fotoğraflar
-    signPhotos[id]=s.photos?s.photos.map(ph=>({dataUrl:ph.dataUrl,note:ph.note||''})):[];
+    signPhotos[id]=s.photos?s.photos.map(ph=>({dataUrl:ph.dataUrl,note:ph.note||'',annotations:ph.annotations||null})):[];
     renderPhotos(id);
   });
 
   if(!(p.signs&&p.signs.length)) document.getElementById('signs-empty').style.display='block';
-  go('s-new');
+
+  // OENEMLi: go() yerine showOnly() — detay tamamen kapanir, yari gorunum olmaz
+  showOnly('s-new');
+  screenStack=['s-home','s-detail','s-new'];
+  const sc=document.getElementById('new-scroll');
+  if(sc) sc.scrollTop=0;
 }
 
 /* ═══════════════════════════════════════════
@@ -896,22 +917,36 @@ function saveProject(){
     gps:gpsText,gpsDistrict,gpsCoords,date:dateStr
   };
   if(editingProject!==null){
-    // Tarihi koruyalım, sadece güncelleme zamanı ekle
-    obj.date=projects[editingProject].date;
+    const editIdx=editingProject;
+    obj.date=projects[editIdx].date;
     obj.updatedDate=dateStr;
-    obj.gps=projects[editingProject].gps||gpsText;
-    obj.gpsCoords=projects[editingProject].gpsCoords||gpsCoords;
-    obj.gpsDistrict=projects[editingProject].gpsDistrict||gpsDistrict;
-    projects[editingProject]=obj;
+    obj.gps=projects[editIdx].gps||gpsText;
+    obj.gpsCoords=projects[editIdx].gpsCoords||gpsCoords;
+    obj.gpsDistrict=projects[editIdx].gpsDistrict||gpsDistrict;
+    projects[editIdx]=obj;
+    try{localStorage.setItem('tf_projects',JSON.stringify(projects));}
+    catch(e){toast('Depolama hatası: Hafıza dolu veya fotoğraflar çok büyük','err');return;}
     toast('Proje güncellendi ✓');
+    editingProject=null;
+    setTimeout(()=>{
+      // Detay ekranını yenile ve oraya dön
+      currentProject=editIdx;
+      showOnly('s-detail');
+      screenStack=['s-home','s-detail'];
+      openDetail(editIdx);
+    },350);
   } else {
     projects.push(obj);
+    try{localStorage.setItem('tf_projects',JSON.stringify(projects));}
+    catch(e){toast('Depolama hatası: Hafıza dolu veya fotoğraflar çok büyük','err');return;}
     toast('Proje kaydedildi ✓');
+    editingProject=null;
+    setTimeout(()=>{
+      showOnly('s-home');
+      screenStack=['s-home'];
+      renderHome();
+    },350);
   }
-  try{localStorage.setItem('tf_projects',JSON.stringify(projects));}
-  catch(e){toast('Depolama hatası: Hafıza dolu veya fotoğraflar çok büyük','err');return;}
-  editingProject=null;
-  setTimeout(()=>{back();renderHome();},350);
 }
 
 /* ═══════════════════════════════════════════
@@ -985,7 +1020,12 @@ function openDetail(idx){
       <button class="abtn" style="flex:1" onclick="shareThis(${idx});printPDF()">📄 PDF</button>
     </div>
   `;
-  go('s-detail');
+  // Eğer zaten detail stack'teyse güncelle, yoksa go()
+  if(screenStack.includes('s-detail')){
+    // sadece içerik güncellendi
+  } else {
+    go('s-detail');
+  }
 }
 
 function deleteProject(){
