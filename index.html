@@ -33,7 +33,7 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--txt);heigh
 }
 .scr{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:1;will-change:transform;}
 .scr.active{transform:translateX(0);z-index:2;}
-.scr.behind{transform:translateX(-8%);z-index:0;}
+.scr.behind{transform:translateX(-100%);z-index:0;}
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:86px;}
 .scroll::-webkit-scrollbar{display:none;}
 .topbar{background:var(--card);border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 16px;height:56px;}
@@ -188,8 +188,9 @@ textarea.if{resize:none;height:72px;line-height:1.5;}
 .ann-toolbar{
   background:#1a1a1a;padding:10px 14px;
   display:flex;align-items:center;gap:8px;flex-shrink:0;
-  border-bottom:1px solid #333;
+  border-bottom:1px solid #333;overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
+.ann-toolbar::-webkit-scrollbar{display:none;}
 .ann-btn{
   padding:6px 12px;border-radius:8px;border:1px solid #444;
   background:#2a2a2a;color:#fff;font-size:12px;font-weight:700;
@@ -442,12 +443,15 @@ textarea.if{resize:none;height:72px;line-height:1.5;}
       <div class="pdf-rows" id="sp-rows"></div>
     </div>
     <div class="sec-lbl">Paylaşım Yöntemi</div>
-    <div class="scard" onclick="exportToOfis()">
-    <div class="sico" style="background:var(--pr-bg)">📤</div>
-    <div class="sinfo"><div class="sname">Ofise Gönder / JSON İndir</div><div class="sdesc">Tüm bilgiler + fotoğraflar ofis paneline aktarılır</div></div>
+    <div class="scard" onclick="exportToOfis()" style="border-color:var(--grn-bd);background:var(--grn-bg);">
+    <div class="sico" style="background:var(--grn-bg);font-size:22px;">📤</div>
+    <div class="sinfo">
+      <div class="sname" style="color:var(--grn);">Ofise Gönder — JSON İndir</div>
+      <div class="sdesc">Tüm bilgiler + fotoğraflar ofis paneline aktarılır</div>
+    </div>
     <div class="sarr">›</div>
   </div>
-  <div class="scard" onclick="shareWhatsApp()"><div class="sico" style="background:#e8fdf0">💬</div><div class="sinfo"><div class="sname">WhatsApp ile Paylaş</div><div class="sdesc">Keşif özeti formatlanmış metin olarak gönderilir</div></div><div class="sarr">›</div></div>
+    <div class="scard" onclick="shareWhatsApp()"><div class="sico" style="background:#e8fdf0">💬</div><div class="sinfo"><div class="sname">WhatsApp ile Paylaş</div><div class="sdesc">Keşif özeti formatlanmış metin olarak gönderilir</div></div><div class="sarr">›</div></div>
     <div class="scard" onclick="printPDF()"><div class="sico" style="background:var(--pr-bg)">📄</div><div class="sinfo"><div class="sname">PDF Oluştur / Yazdır</div><div class="sdesc">Tarayıcı baskı → "PDF olarak kaydet" seçin</div></div><div class="sarr">›</div></div>
     <div class="scard" onclick="copyText()"><div class="sico" style="background:#f5f0ff">📋</div><div class="sinfo"><div class="sname">Metni Kopyala</div><div class="sdesc">Telegram, mail veya not uygulamasına yapıştır</div></div><div class="sarr">›</div></div>
     <div class="scard" onclick="shareMail()"><div class="sico" style="background:var(--blu-bg)">📧</div><div class="sinfo"><div class="sname">E-Posta Hazırla</div><div class="sdesc">Varsayılan mail uygulaması açılır</div></div><div class="sarr">›</div></div>
@@ -474,23 +478,28 @@ let signCount=0, signPhotos={}, mrowCounts={};
 function go(id){
   const cur=screenStack[screenStack.length-1];
   if(cur===id)return;
-  document.getElementById(cur).classList.add('behind');
+  const curEl=document.getElementById(cur);
+  curEl.classList.add('behind');
+  curEl.style.transform='';
   const next=document.getElementById(id);
   next.classList.add('active'); next.classList.remove('behind');
+  next.style.transform='';
   screenStack.push(id); onScreen(id);
 }
 function back(){
   if(screenStack.length<2)return;
   const cur=screenStack.pop();
   const prev=screenStack[screenStack.length-1];
-  document.getElementById(cur).classList.remove('active','behind');
+  const curEl=document.getElementById(cur);
+  curEl.classList.remove('active','behind');
+  curEl.style.transform='';
+  curEl.style.zIndex='';
   const prevEl=document.getElementById(prev);
   prevEl.classList.remove('behind');
   prevEl.classList.add('active');
-  // Eğer düzenleme ekranından çıkıyorsak editingProject'i sıfırla
-  if(cur==='s-new'&&editingProject!==null){
-    editingProject=null;
-  }
+  prevEl.style.transform='';
+  prevEl.style.zIndex='';
+  if(cur==='s-new'&&editingProject!==null){editingProject=null;}
   onScreen(prev);
 }
 function onScreen(id){
@@ -502,9 +511,22 @@ function onScreen(id){
 /* Tüm ekranları sıfırla, sadece isteneni göster */
 function showOnly(id){
   document.querySelectorAll('.scr').forEach(s=>{
+    s.style.transition='none';
     s.classList.remove('active','behind');
+    s.style.transform='translateX(105%)';
+    s.style.zIndex='';
   });
-  document.getElementById(id).classList.add('active');
+  const target=document.getElementById(id);
+  target.classList.add('active');
+  target.style.transform='translateX(0)';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('.scr').forEach(s=>{
+        s.style.transition='';
+        s.style.transform='';
+      });
+    });
+  });
   screenStack=[id];
 }
 
@@ -587,27 +609,51 @@ function startEdit(){
   if(currentProject===null)return;
   const p=projects[currentProject];
   editingProject=currentProject;
+
+  // Geçiş animasyonunu geçici olarak kapat, instant ekran değiştir
+  const allScr=document.querySelectorAll('.scr');
+  allScr.forEach(s=>{
+    s.style.transition='none';
+    s.classList.remove('active','behind');
+    s.style.transform='translateX(105%)';
+    s.style.zIndex='';
+  });
+
+  const newScr=document.getElementById('s-new');
+  newScr.classList.add('active');
+  newScr.style.transform='translateX(0)';
+
+  const detScr=document.getElementById('s-detail');
+  if(detScr){
+    detScr.classList.add('behind');
+    detScr.style.transform='translateX(-100%)';
+  }
+
+  // Bir sonraki frame'de transition'ı geri aç
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      allScr.forEach(s=>{ s.style.transition=''; s.style.transform=''; });
+    });
+  });
+
+  screenStack=['s-home','s-detail','s-new'];
+
   document.getElementById('new-screen-title').textContent='Projeyi Düzenle';
   document.getElementById('save-btn').textContent='💾 Değişiklikleri Kaydet';
-  // Tüm ekranları kapat, sadece düzenleme ekranını aç — yarı görünüm sorunu çözülür
 
-  // Mevcut verileri forma doldur
   document.getElementById('f-client').value=p.client||'';
   document.getElementById('f-project').value=p.project||'';
   document.getElementById('f-measurer').value=p.measurer||'';
   document.getElementById('f-address').value=p.address||'';
   document.getElementById('f-note').value=p.note||'';
 
-  // GPS bar
   const locStr=[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'Konum yok';
   document.getElementById('new-gps-bar').textContent='📍 '+locStr;
 
-  // Durum
   document.querySelectorAll('#status-sel .tc').forEach(t=>{
     t.classList.toggle('on', t.dataset.val===p.status);
   });
 
-  // Tabelaları yükle
   signCount=0; signPhotos={}; mrowCounts={};
   document.getElementById('signs-container').innerHTML='';
   document.getElementById('signs-empty').style.display='none';
@@ -615,19 +661,15 @@ function startEdit(){
   (p.signs||[]).forEach((s,i)=>{
     addSign();
     const id='sign-'+signCount;
-    // Etiket
     const lblEl=document.getElementById(id+'-label');
     if(lblEl){lblEl.value=s.label||''; document.getElementById(id+'-lbl').textContent=s.label||`Tabela ${signCount}`;}
-    // Tip
     const typeEl=document.getElementById(id+'-type');
     if(typeEl){typeEl.value=s.type||''; onTypeChange(id);}
-    // Tek ölçü
     if(!MULTI_ROW_TYPES.includes(s.type)){
       const wEl=document.getElementById(id+'-w'); if(wEl) wEl.value=s.w||'';
       const hEl=document.getElementById(id+'-h'); if(hEl) hEl.value=s.h||'';
       const dEl=document.getElementById(id+'-d'); if(dEl) dEl.value=s.d||'';
     }
-    // Çoklu satır
     if(s.mrows&&s.mrows.length){
       const wrap=document.getElementById(id+'-mrow-wrap');
       if(wrap){ wrap.innerHTML=''; mrowCounts[id]=0; }
@@ -640,7 +682,6 @@ function startEdit(){
         const rn=document.getElementById(`${id}-mrow-${ri2}-note`); if(rn) rn.value=row.note||'';
       });
     }
-    // Montaj
     const montajHid=document.getElementById(id+'-montaj');
     if(montajHid&&s.montaj){
       montajHid.value=s.montaj;
@@ -648,7 +689,6 @@ function startEdit(){
         sel.querySelectorAll('.tc').forEach(tc=>{if(tc.textContent===s.montaj)tc.classList.add('on');});
       });
     }
-    // Cam folyo
     if(s.type==='Cam Folyo'){
       const cwEl=document.getElementById(id+'-cw'); if(cwEl) cwEl.value=s.cw||'';
       const chEl=document.getElementById(id+'-ch'); if(chEl) chEl.value=s.ch||'';
@@ -657,21 +697,17 @@ function startEdit(){
         if(fSel) fSel.querySelectorAll('.tc').forEach(tc=>{if(tc.textContent===s.folio)tc.classList.add('cam-on');});
       }
     }
-    // Not
     const noteEl=document.getElementById(id+'-note'); if(noteEl) noteEl.value=s.note||'';
-    // Fotoğraflar
     signPhotos[id]=s.photos?s.photos.map(ph=>({dataUrl:ph.dataUrl,note:ph.note||'',annotations:ph.annotations||null})):[];
     renderPhotos(id);
   });
 
   if(!(p.signs&&p.signs.length)) document.getElementById('signs-empty').style.display='block';
 
-  // OENEMLi: go() yerine showOnly() — detay tamamen kapanir, yari gorunum olmaz
-  showOnly('s-new');
-  screenStack=['s-home','s-detail','s-new'];
   const sc=document.getElementById('new-scroll');
   if(sc) sc.scrollTop=0;
 }
+
 
 /* ═══════════════════════════════════════════
    SIGN BLOCK
@@ -934,9 +970,27 @@ function saveProject(){
     toast('Proje güncellendi ✓');
     editingProject=null;
     setTimeout(()=>{
-      // Detay ekranını yenile ve oraya dön
       currentProject=editIdx;
-      showOnly('s-detail');
+      document.querySelectorAll('.scr').forEach(s=>{
+        s.style.transition='none';
+        s.classList.remove('active','behind');
+        s.style.transform='translateX(105%)';
+        s.style.zIndex='';
+      });
+      const homeScr=document.getElementById('s-home');
+      homeScr.classList.add('behind');
+      homeScr.style.transform='translateX(-100%)';
+      const detScr=document.getElementById('s-detail');
+      detScr.classList.add('active');
+      detScr.style.transform='translateX(0)';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          document.querySelectorAll('.scr').forEach(s=>{
+            s.style.transition='';
+            s.style.transform='';
+          });
+        });
+      });
       screenStack=['s-home','s-detail'];
       openDetail(editIdx);
     },350);
@@ -1161,57 +1215,72 @@ function printPDF(){
 }
 
 
-/* ══ OFİSE GÖNDER ══ */
+/* ══════════════════════════════════
+   OFİSE GÖNDER — JSON EXPORT
+══════════════════════════════════ */
 function exportToOfis(){
-  const idx = shareProject!==null ? shareProject : currentProject;
-  if(idx===null){toast('Önce proje seçin','err');return;}
+  const idx = shareProject !== null ? shareProject : currentProject;
+  if(idx === null){ toast('Önce proje seçin', 'err'); return; }
   const p = projects[idx];
-  if(!p){toast('Proje bulunamadı','err');return;}
+  if(!p){ toast('Proje bulunamadı', 'err'); return; }
 
-  // Ofis panelinin beklediği formata dönüştür
   const ofisData = {
-    _source: 'paprika-kesif',
+    _source:  'paprika-kesif',
     _version: 1,
-    cl: p.client   || '',
-    pr: p.project  || '',
-    ms: p.measurer || '',
-    ad: [p.gpsDistrict, p.address].filter(Boolean).join(' — '),
-    gps: p.gps     || '',
-    dt: p.date     || new Date().toLocaleDateString('tr-TR'),
-    st: p.status   || 'Keşif Alındı',
-    nt: p.note     || '',
-    signs: (p.signs||[]).map(function(s){
+    cl:  p.client      || '',
+    pr:  p.project     || '',
+    ms:  p.measurer    || '',
+    ad:  [p.gpsDistrict, p.address].filter(Boolean).join(' — '),
+    gps: p.gps         || '',
+    dt:  p.date        || new Date().toLocaleDateString('tr-TR'),
+    st:  p.status      || 'Keşif Alındı',
+    nt:  p.note        || '',
+    signs: (p.signs || []).map(function(s){
       return {
-        nm: s.label  || s.type || '',
-        tp: s.type   || '',
-        w:  s.w      || '',
-        h:  s.h      || '',
-        d:  s.d      || '',
-        mn: s.montaj || '',
-        nt: s.note   || '',
-        mrows: s.mrows || [],
-        // Fotoğraflar: annotations varsa onu, yoksa dataUrl
-        photos: (s.photos||[]).map(function(ph){
+        nm:     s.label   || s.type || '',
+        tp:     s.type    || '',
+        w:      s.w       || '',
+        h:      s.h       || '',
+        d:      s.d       || '',
+        mn:     s.montaj  || '',
+        nt:     s.note    || '',
+        mrows:  s.mrows   || [],
+        cw:     s.cw      || '',
+        ch:     s.ch      || '',
+        folio:  s.folio   || '',
+        photos: (s.photos || []).map(function(ph){
           return {
-            dataUrl: ph.annotations || ph.dataUrl || '',
-            note: ph.note || ''
+            dataUrl:     ph.annotations || ph.dataUrl || '',
+            note:        ph.note        || '',
+            annotations: ph.annotations || null
           };
         })
       };
     })
   };
 
-  const json = JSON.stringify(ofisData, null, 2);
-  const blob = new Blob([json], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  const fname = (p.client||'proje').replace(/[^a-z0-9çğışöü]/gi,'_') + '_kesif.json';
-  a.download = fname;
+  // JSON dosyası olarak indir
+  const json  = JSON.stringify(ofisData, null, 2);
+  const blob  = new Blob([json], { type: 'application/json' });
+  const url   = URL.createObjectURL(blob);
+  const fname = (p.client || 'proje').replace(/[^a-z0-9çğışöü]/gi, '_') + '_kesif.json';
+  const a     = document.createElement('a');
+  a.href      = url;
+  a.download  = fname;
   a.click();
-  toast('JSON indirildi — Ofis paneline yükle');
+
+  // WhatsApp'a da PDF linki + mesaj gönder
+  const wa = buildText();
+  const waMsg = '📤 Ofis paketi indiriliyor: ' + fname + '\n\n' + wa;
+  setTimeout(function(){
+    if(confirm('JSON indirildi ✅\n\nWhatsApp\'a da özet mesaj gönderilsin mi?')){
+      window.open('https://wa.me/?text=' + encodeURIComponent(waMsg), '_blank');
+    }
+  }, 400);
+
+  toast('Keşif paketi hazır — ' + (ofisData.signs.length) + ' tabela');
 }
 
-/* ══ TOAST */
 /* ═══════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════ */
