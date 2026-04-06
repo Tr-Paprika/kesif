@@ -503,11 +503,22 @@ function onScreen(id){
 /* Tüm ekranları sıfırla, sadece isteneni göster */
 function showOnly(id){
   document.querySelectorAll('.scr').forEach(s=>{
+    s.style.transition='none';
     s.classList.remove('active','behind');
-    s.style.transform='';
+    s.style.transform='translateX(105%)';
     s.style.zIndex='';
   });
-  document.getElementById(id).classList.add('active');
+  const target=document.getElementById(id);
+  target.classList.add('active');
+  target.style.transform='translateX(0)';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('.scr').forEach(s=>{
+        s.style.transition='';
+        s.style.transform='';
+      });
+    });
+  });
   screenStack=[id];
 }
 
@@ -951,9 +962,27 @@ function saveProject(){
     toast('Proje güncellendi ✓');
     editingProject=null;
     setTimeout(()=>{
-      // Detay ekranını yenile ve oraya dön
       currentProject=editIdx;
-      showOnly('s-detail');
+      document.querySelectorAll('.scr').forEach(s=>{
+        s.style.transition='none';
+        s.classList.remove('active','behind');
+        s.style.transform='translateX(105%)';
+        s.style.zIndex='';
+      });
+      const homeScr=document.getElementById('s-home');
+      homeScr.classList.add('behind');
+      homeScr.style.transform='translateX(-100%)';
+      const detScr=document.getElementById('s-detail');
+      detScr.classList.add('active');
+      detScr.style.transform='translateX(0)';
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          document.querySelectorAll('.scr').forEach(s=>{
+            s.style.transition='';
+            s.style.transform='';
+          });
+        });
+      });
       screenStack=['s-home','s-detail'];
       openDetail(editIdx);
     },350);
