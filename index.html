@@ -583,29 +583,36 @@ function startEdit(){
   if(currentProject===null)return;
   const p=projects[currentProject];
   editingProject=currentProject;
-  // Önce ekranı göster — tüm diğer ekranları kapat
-  showOnly('s-new');
+
+  // TÜM ekranları zorla kapat
+  document.querySelectorAll('.scr').forEach(s=>{
+    s.classList.remove('active','behind');
+  });
+  // Sadece s-new'i aç
+  const newScr = document.getElementById('s-new');
+  newScr.classList.add('active');
   screenStack=['s-home','s-detail','s-new'];
+
+  // s-detail'i behind olarak işaretle (geri tuşu için)
+  const detScr = document.getElementById('s-detail');
+  if(detScr) detScr.classList.add('behind');
+
   document.getElementById('new-screen-title').textContent='Projeyi Düzenle';
   document.getElementById('save-btn').textContent='💾 Değişiklikleri Kaydet';
 
-  // Mevcut verileri forma doldur
   document.getElementById('f-client').value=p.client||'';
   document.getElementById('f-project').value=p.project||'';
   document.getElementById('f-measurer').value=p.measurer||'';
   document.getElementById('f-address').value=p.address||'';
   document.getElementById('f-note').value=p.note||'';
 
-  // GPS bar
   const locStr=[p.gpsDistrict,p.address,p.gps].filter(Boolean).join(' — ')||'Konum yok';
   document.getElementById('new-gps-bar').textContent='📍 '+locStr;
 
-  // Durum
   document.querySelectorAll('#status-sel .tc').forEach(t=>{
     t.classList.toggle('on', t.dataset.val===p.status);
   });
 
-  // Tabelaları yükle
   signCount=0; signPhotos={}; mrowCounts={};
   document.getElementById('signs-container').innerHTML='';
   document.getElementById('signs-empty').style.display='none';
@@ -613,19 +620,15 @@ function startEdit(){
   (p.signs||[]).forEach((s,i)=>{
     addSign();
     const id='sign-'+signCount;
-    // Etiket
     const lblEl=document.getElementById(id+'-label');
     if(lblEl){lblEl.value=s.label||''; document.getElementById(id+'-lbl').textContent=s.label||`Tabela ${signCount}`;}
-    // Tip
     const typeEl=document.getElementById(id+'-type');
     if(typeEl){typeEl.value=s.type||''; onTypeChange(id);}
-    // Tek ölçü
     if(!MULTI_ROW_TYPES.includes(s.type)){
       const wEl=document.getElementById(id+'-w'); if(wEl) wEl.value=s.w||'';
       const hEl=document.getElementById(id+'-h'); if(hEl) hEl.value=s.h||'';
       const dEl=document.getElementById(id+'-d'); if(dEl) dEl.value=s.d||'';
     }
-    // Çoklu satır
     if(s.mrows&&s.mrows.length){
       const wrap=document.getElementById(id+'-mrow-wrap');
       if(wrap){ wrap.innerHTML=''; mrowCounts[id]=0; }
@@ -638,7 +641,6 @@ function startEdit(){
         const rn=document.getElementById(`${id}-mrow-${ri2}-note`); if(rn) rn.value=row.note||'';
       });
     }
-    // Montaj
     const montajHid=document.getElementById(id+'-montaj');
     if(montajHid&&s.montaj){
       montajHid.value=s.montaj;
@@ -646,7 +648,6 @@ function startEdit(){
         sel.querySelectorAll('.tc').forEach(tc=>{if(tc.textContent===s.montaj)tc.classList.add('on');});
       });
     }
-    // Cam folyo
     if(s.type==='Cam Folyo'){
       const cwEl=document.getElementById(id+'-cw'); if(cwEl) cwEl.value=s.cw||'';
       const chEl=document.getElementById(id+'-ch'); if(chEl) chEl.value=s.ch||'';
@@ -655,9 +656,7 @@ function startEdit(){
         if(fSel) fSel.querySelectorAll('.tc').forEach(tc=>{if(tc.textContent===s.folio)tc.classList.add('cam-on');});
       }
     }
-    // Not
     const noteEl=document.getElementById(id+'-note'); if(noteEl) noteEl.value=s.note||'';
-    // Fotoğraflar
     signPhotos[id]=s.photos?s.photos.map(ph=>({dataUrl:ph.dataUrl,note:ph.note||'',annotations:ph.annotations||null})):[];
     renderPhotos(id);
   });
