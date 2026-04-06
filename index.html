@@ -582,9 +582,11 @@ function startEdit(){
   if(currentProject===null)return;
   const p=projects[currentProject];
   editingProject=currentProject;
+  // Önce ekranı göster — tüm diğer ekranları kapat
+  showOnly('s-new');
+  screenStack=['s-home','s-detail','s-new'];
   document.getElementById('new-screen-title').textContent='Projeyi Düzenle';
   document.getElementById('save-btn').textContent='💾 Değişiklikleri Kaydet';
-  // Tüm ekranları kapat, sadece düzenleme ekranını aç — yarı görünüm sorunu çözülür
 
   // Mevcut verileri forma doldur
   document.getElementById('f-client').value=p.client||'';
@@ -661,9 +663,6 @@ function startEdit(){
 
   if(!(p.signs&&p.signs.length)) document.getElementById('signs-empty').style.display='block';
 
-  // OENEMLi: go() yerine showOnly() — detay tamamen kapanir, yari gorunum olmaz
-  showOnly('s-new');
-  screenStack=['s-home','s-detail','s-new'];
   const sc=document.getElementById('new-scroll');
   if(sc) sc.scrollTop=0;
 }
